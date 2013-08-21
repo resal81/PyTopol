@@ -56,10 +56,11 @@ setup(
     license='MIT',
     zip_safe=False,
     keywords='pytopol',
+    scripts=['scripts/psf2top.py'],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
@@ -68,5 +69,5 @@ setup(
         'Programming Language :: Python :: 3.3',
     ],
     tests_require=['pytest>=2.3.5'],
-    cmdclass = {'test': PyTest},
+    cmdclass={'test': PyTest},
 )
