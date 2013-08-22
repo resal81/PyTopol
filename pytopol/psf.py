@@ -1,62 +1,96 @@
+"""
+This module provides tools for working with PSF files.
 
-from .utils  import build_res_chain
-from .validate import  ValidateMixin
-from .pdb    import PDBSystem
-from . import blocks
+"""
 
-import os, logging, time
+from pytopl.utils import build_res_chain
+from pytopl.pdb import PDBSystem
+from pytopol import blocks
+
+import os
+import logging
+import time
 
 # create logger
 module_logger = logging.getLogger('mainapp.psf')
 
 
 
-class PSFSystem(ValidateMixin):
-    _valuetypes = dict(
-        psffile = str,
-        pdbfile = str,
-        molecules = tuple,
-        lgr    = logging.Logger,
-    )
+class PSFSystem(object):
 
-    _allowed_values =  dict(
-    )
+    """ PSFSystem class povides functionality to parse PSF files. """
+
+
 
     def __init__(self, psffile, pdbfile=None, each_chain_is_molecule=False):
+        """ Initialization of a PSF file.
+
+        Args:
+            psffile
+                the path to the psf file
+            pdbfile
+                optional, the path to the pdb file
+            each_chain_is_molecule
+                bool, if True, each segment in the PSF file will be converted
+                to one Molecule instance.
+
+        Attributes:
+            self.lgr        : logger.Logger
+            self.psfile     : str, path to the psf file
+            self.pdbfile    : str, path to the pdb file
+            self.molecules  : a tuple of Molecule instances
+
+        """
+
         self.lgr = logging.getLogger('mainapp.psf.PSFSystem')
         self.lgr.debug(">> entering PSFSystem")
 
         self.psffile = psffile
         self.molecules = tuple([])
 
+        # parse the psf file and create one molecule
         mol = self._parse(self.psffile)
+
         if mol:
             self.lgr.debug("the psf molecule was parsed")
+
+            # add pdb file
             if pdbfile:
                 self.pdbfile = pdbfile
                 self._add_pdbfile(pdbfile, mol)
-            
+
+            # break psf segments to one molecule
             if each_chain_is_molecule:
                 sepmols = self._process_psf(mol)
                 if sepmols:
                     self.molecules = tuple(sepmols)
-                    self.lgr.debug("%d molecules were generated from the psf file" % len(sepmols))
+                    self.lgr.debug(
+                       "%d molecules were generated from the psf file" % len(sepmols))
+                else:
+                    self.lgr.warning(
+                        "could not convert psf segments to molecules")
             else:
                 self.molecules = tuple([mol])
 
         self.lgr.debug("<< leaving PSFSystem")
 
+
+
     def __repr__(self):
         natoms = sum([len(m.atoms) for m in self.molecules])
-        return 'PSF file with %6d atoms and %2d molecules' % (natoms, len(self.molecules))
+        return 'PSF file with %6d atoms and %2d molecules' % (
+            natoms, len(self.molecules))
+
 
 
     def _add_pdbfile(self, pdbfile, mol):
-        pdb = PDBSystem(pdbfile, guess_mols = False)
-        
+        """ add coordinates form a pdb file to the system."""
+
+        pdb = PDBSystem(pdbfile, guess_mols=False)
+
         if len(pdb.atoms) == len(mol.atoms):
             for i, atom in enumerate(mol.atoms):
-                atom.coords = pdb.atoms[1].coords
+                atom.coords = pdb.atoms[i].coords
             self.lgr.debug("coordinates from pdb file were added")
         else:
             self.lgr.error("the number of atoms in the pdb and psf files doesn't match: %6d vs %6d" % (
@@ -65,19 +99,27 @@ class PSFSystem(ValidateMixin):
 
 
     def _parse(self, psffile):
+        """ Parse a psf file.
+
+        Args:
+            psffile : str, path to the psf file
+        Returns:
+            a Molecule instance or False
+
+        """
+
         self.lgr.debug("parsing psf file: %s" % psffile)
 
-        
         t1 = time.time()
+
         # check if the file exists
         if not os.path.exists(psffile):
-            self.lgr.error("file doesn't exist")
-            raise IOError
+            self.lgr.critical("file doesn't exist")
+            return False
 
         # initialize empty list for data
         mol = blocks.Molecule()
 
-        # -----------------------------------------------------
         # supported formats
         psf_formats = {
             'NAMD': {
@@ -89,9 +131,8 @@ class PSFSystem(ValidateMixin):
                     '!NIMPHI': {'type':'improper','n':4,'multiple':True, 'func':self._badi_line},
                     '!NCRTERM':{'type':'cmap',    'n':8,'multiple':False,'func':self._badi_line},
                 },
-             },
+            },
         }
-        # -----------------------------------------------------
 
 
         # find the psf format
@@ -103,12 +144,11 @@ class PSFSystem(ValidateMixin):
         # check if the format is valid
         if psffmt is False:
             self.lgr.error("not a known psf format")
-            return False 
+            return False
 
         elif psffmt not in list(psf_formats.keys()):
             self.lgr.error("psf format '%s' is not supported" % (psffmt))
             return False
-
 
         # parse the file
         _sec = None
@@ -117,8 +157,10 @@ class PSFSystem(ValidateMixin):
         with open(psffile) as f:
             for line in f:
                 line = line.strip()
+
                 if line == '':
                     continue
+
                 if '!' in line:
                     if line.split()[1].strip(':') in known_sections:
                         _sec = line.split()[1].strip(':')
@@ -129,11 +171,10 @@ class PSFSystem(ValidateMixin):
 
                 if _sec is not None:
                     _conf = psf_formats[psffmt]['sections'][_sec]
-                    result  = _conf['func'](psffmt, line, _conf, mol)
+                    result = _conf['func'](psffmt, line, _conf, mol)
                     if result is False:
                         self.lgr.error("couldn't parse this line in '%s' section:\n  %s" % (_sec, line))
                         return False
-
 
         # build chain and residues
         build_res_chain(mol)
@@ -144,20 +185,35 @@ class PSFSystem(ValidateMixin):
         return mol
 
 
-    def _process_psf(self, temp_mol):
 
-        # assuming each segment is not connected to the rest
+    def _process_psf(self, temp_mol):
+        """Convert a psf Molecule to multiple Molecules.
+
+        Using this function only makes sense if the segments in the PSF file
+            are not covalently bond (usually this the case).
+
+        Args:
+           temp_mol : a psf Molecule instance
+
+        Returns:
+           list of Molecules or False
+
+        """
 
         self.lgr.debug("converting psf to multiple molecules based on chains")
 
-        assert len(set([chain.name for chain in temp_mol.chains])) == len(temp_mol.chains), \
-                "the name of the chains is not unique"
+        unique_chains = set([chain.name for chain in temp_mol.chains])
+        if len(unique_chains) != len(temp_mol.chains):
+            self.lgr.error("the name of the chains is not unique")
+            return False
 
 
+        # counter for different elements in the psf file
         _NA= _B = _A = _D = _I = _C = 0
         molecules = []
 
 
+        # Atom:Chain.name dictionary for easy lookup
         _AC_map = {}
         for atom in temp_mol.atoms:
             _AC_map[atom] = atom.residue.chain.name
@@ -171,39 +227,44 @@ class PSFSystem(ValidateMixin):
                 for atom in res.atoms:
                     m.atoms.append(atom)
                     _NA += 1
-        
+
             for b in temp_mol.bonds:
                 if _AC_map[b.atom1] == chainname and _AC_map[b.atom2] == chainname:
+
                     m.bonds.append(b)
                     _B += 1
 
             for a in temp_mol.angles:
-                if _AC_map[a.atom1] == chainname and _AC_map[a.atom2] == chainname and _AC_map[a.atom3] == chainname:
+                if _AC_map[a.atom1] == chainname and _AC_map[a.atom2] == chainname and \
+                   _AC_map[a.atom3] == chainname:
+
                     m.angles.append(a)
                     _A += 1
 
             for d in temp_mol.dihedrals:
                 if _AC_map[d.atom1] == chainname and _AC_map[d.atom2] == chainname and \
                    _AC_map[d.atom3] == chainname and _AC_map[d.atom4] == chainname:
+
                     m.dihedrals.append(d)
                     _D += 1
 
             for i in temp_mol.impropers:
                 if _AC_map[i.atom1] == chainname and _AC_map[i.atom2] == chainname and \
                    _AC_map[i.atom3] == chainname and _AC_map[i.atom4] == chainname:
+
                     m.impropers.append(i)
                     _I += 1
 
 
             for c in temp_mol.cmaps:
                 if _AC_map[c.atom1] == chainname and _AC_map[c.atom2] == chainname and \
-                   _AC_map[c.atom3] == chainname and _AC_map[c.atom4] == chainname and\
+                   _AC_map[c.atom3] == chainname and _AC_map[c.atom4] == chainname and \
                    _AC_map[c.atom5] == chainname and _AC_map[c.atom6] == chainname and \
                    _AC_map[c.atom7] == chainname and _AC_map[c.atom8] == chainname:
 
                     m.cmaps.append(c)
                     _C += 1
-           
+
             build_res_chain(m)
             m.renumber_atoms()
             molecules.append(m)
@@ -219,29 +280,46 @@ class PSFSystem(ValidateMixin):
         return molecules
 
 
-    def _find_psf_format(self, first_line):
 
+    def _find_psf_format(self, first_line):
+        """Find the PSF format.
+
+        Args:
+            first_line: str, the first line in the psf file
+
+        Returns:
+            'NAMD' or False
+
+        """
         _line = first_line.strip()
         if not _line.startswith('PSF'):
             self.lgr.error("the first line of psf file doesn't start with 'PSF'")
             return False
         else:
-            return 'NAMD'  # TODO: remove this
             fields = _line.split()
-            if len(fields) not in (1, 2,3):
+            if len(fields) not in (1, 2, 3):
                 self.lgr.error("the firs line of psf file must have 1 to 3 fields")
                 return False
             else:
-                if len(fields) == 3:
-                    if fields[2] == 'NAMD':
-                        return 'NAMD'
-                    else:
-                        raise NotImplementedError
+                if fields[-1] == 'NAMD':
+                    return 'NAMD'
                 else:
-                    raise NotImplementedError 
+                    self.lgr.error("could not find NAMD keywork at the end of"
+                                   "first line in the psf file")
+                    return False
+
 
 
     def _atom_line(self, psffmt, line, conf, m):
+        """Parse an ATOM line in the psf file.
+
+       Args:
+           psffmt: str, 'NAMD'
+           line:  str, a psf ATOM line
+           conf: dict
+           m:  Molecule
+
+        """
         if psffmt == 'NAMD':
             f = line.split()
             if len(f) != conf['n']:
@@ -267,8 +345,8 @@ class PSFSystem(ValidateMixin):
             raise NotImplementedError
 
 
-    @staticmethod
-    def _badi_line(psffmt, line, conf, m):
+
+    def _badi_line(self, psffmt, line, conf, m):
 
         if psffmt == 'NAMD':
 
@@ -289,12 +367,14 @@ class PSFSystem(ValidateMixin):
                     b = blocks.Bond()
                     atom1 = m.anumb_to_atom(int(f[_m]))
                     atom2 = m.anumb_to_atom(int(f[_n]))
-                   
+
                     if atom1 and atom2:
                         b.atom1 = atom1
                         b.atom2 = atom2
 
                         m.bonds.append(b)
+                    else:
+                        raise TypeError
 
                 elif conf['type'] == 'angle':
                     _m = i * conf['n']
@@ -312,6 +392,8 @@ class PSFSystem(ValidateMixin):
                         a.atom3 = atom3
 
                         m.angles.append(a)
+                    else:
+                        raise TypeError
 
                 elif conf['type'] in ('dihedral', 'improper'):
                     _m = i * conf['n']
@@ -338,6 +420,8 @@ class PSFSystem(ValidateMixin):
                         d.atom4 = atom4
 
                         cont.append(d)
+                    else:
+                        raise TypeError
 
                 elif conf['type'] == 'cmap':
                     _m = i * conf['n']
@@ -370,6 +454,8 @@ class PSFSystem(ValidateMixin):
                         cm.atom8 = atom8
 
                         m.cmaps.append(cm)
+                    else:
+                        raise TypeError
 
                 else:
                     raise ValueError("unknown type : '%s'" % conf['type'])
@@ -382,20 +468,18 @@ class PSFSystem(ValidateMixin):
 
 
 
-
-
 if __name__ == '__main__':
     import sys, time
 
-    t1 = time.time()
+    ts = time.time()
     if len(sys.argv) == 2:
         p = PSFSystem(sys.argv[1], each_chain_is_molecule=True)
     elif len(sys.argv) == 3:
         p = PSFSystem(sys.argv[1], pdbfile=sys.argv[2], each_chain_is_molecule=False)
-    dt = time.time() - t1
+    dt = time.time() - ts
 
     print(p)
     print('> parsed in %4.1f seconds' % dt)
 
 
-    
+
