@@ -1,8 +1,7 @@
 
 
-from .psf import PSFSystem
-from .validate import ValidateMixin
-from . import blocks
+from pytopol.psf import PSFSystem
+from pytopol import blocks
 import os, logging
 
 
@@ -13,16 +12,7 @@ class GroTop:
     pass
 
 
-class SystemToGroTop(ValidateMixin):
-
-    _valuetypes = dict(
-        system  = PSFSystem,
-        lgr     = logging.Logger
-    )
-
-    _allowed_values = dict(
-
-    )
+class SystemToGroTop(object):
 
     functions = {
         'charmm':{
@@ -34,7 +24,7 @@ class SystemToGroTop(ValidateMixin):
              'cmaps':      1,
         },
     }
-    
+
     formats = {
         'atomtypes'    : '{:<7s} {:3d} {:>7.4f}   {:4.1f}   {:3s}     {:14.12f}     {:10.7f}  \n',
         'atoms'        : '{:6d} {:>10s} {:6d} {:6s} {:6s} {:6d} {:10.3f} {:10.3f} \n',
@@ -85,14 +75,14 @@ class SystemToGroTop(ValidateMixin):
 
     @staticmethod
     def _redefine_atomtypes(mol):
-        
+
         i = 1
-        
+
         for atom in mol.atoms:
             atom.atomtype = 'at%03d' % i
             i += 1
-    
-    
+
+
     def assemble_topology(self, redefine_atom_types = False):
 
         self.lgr.debug("starting to assemble topology...")
@@ -104,7 +94,7 @@ class SystemToGroTop(ValidateMixin):
 
         self.lgr.debug("generating a temporary molecule to create forcefield types...")
         _temp_mol = blocks.Molecule()
-        
+
         for m in self.system.molecules:
             _temp_mol.atoms += m.atoms
             _temp_mol.bonds += m.bonds
@@ -128,7 +118,7 @@ class SystemToGroTop(ValidateMixin):
             top += '1          2           yes          1.0       1.0 \n'
 
         self.lgr.debug("making atom/pair/bond/angle/dihedral/improper types")
-        top += self.toptemplate 
+        top += self.toptemplate
         top = top.replace('*ATOMTYPES*',     ''.join( self._make_atomtypes(_temp_mol)) )
         top = top.replace('*PAIRTYPES*',     ''.join( self._make_pairtypes(_temp_mol)) )
         top = top.replace('*BONDTYPES*',     ''.join( self._make_bondtypes(_temp_mol)) )
@@ -140,7 +130,7 @@ class SystemToGroTop(ValidateMixin):
         for i, m in enumerate(self.system.molecules):
             molname = 'mol_%02d' % (i+1)
             top += '#include "itp_%s.itp" \n' % molname
-        
+
         top += '\n[system]  \nConvertedSystem\n\n'
         top += '[molecules] \n'
 
@@ -148,7 +138,7 @@ class SystemToGroTop(ValidateMixin):
             molname = 'mol_%02d' % (i+1)
             top += '%s     1\n' % molname
         top += '\n'
-         
+
         with open('top.top', 'w') as f:
             f.writelines([top])
 
@@ -164,7 +154,7 @@ class SystemToGroTop(ValidateMixin):
         for i,m in enumerate(self.system.molecules):
             molname = 'mol_%02d' % (i+1)
             itp = self.itptemplate
-            itp = itp.replace('*MOLECULETYPE*',  ''.join( self._make_moleculetype(m, molname))  ) 
+            itp = itp.replace('*MOLECULETYPE*',  ''.join( self._make_moleculetype(m, molname))  )
             itp = itp.replace('*ATOMS*',         ''.join( self._make_atoms(m))  )
             itp = itp.replace('*BONDS*',         ''.join( self._make_bonds(m))  )
             itp = itp.replace('*PAIRS*',         ''.join( self._make_pairs(m))  )
@@ -189,18 +179,18 @@ class SystemToGroTop(ValidateMixin):
                 return _protons[at[0]]
             else:
                 return 0
-        
+
 
         _added = {}
         result = []
         for atom in m.atoms:
             at = atom.get_atomtype()
             if at in list(_added.keys()):
-                assert _added[at] == (atom.mass, atom.lje, atom.ljl), '%s: %s != %s' % (at, 
+                assert _added[at] == (atom.mass, atom.lje, atom.ljl), '%s: %s != %s' % (at,
                         _added[at], (atom.mass, atom.lje, atom.ljl))
                 continue
 
-            # not checking atom.charge => it can be different for the same atom type 
+            # not checking atom.charge => it can be different for the same atom type
             _added[at] = (atom.mass, atom.lje, atom.ljl)
 
             prot = get_prot(at)
@@ -301,7 +291,7 @@ class SystemToGroTop(ValidateMixin):
                 ktetha, tetha0, kub, s0 = ang.param.coeffs
 
             if key in list(_added.keys()):
-                assert _added[key] == (ktetha, tetha0, kub, s0), '%s -> %s != %s' % (key, _added[key], 
+                assert _added[key] == (ktetha, tetha0, kub, s0), '%s -> %s != %s' % (key, _added[key],
                         (ktetha, tetha0, kub, s0))
                 continue
 

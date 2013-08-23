@@ -1,34 +1,10 @@
 
 
-
-from .validate import ValidateMixin
-
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Molecule(ValidateMixin):
-    _valuetypes = dict(
-        chains      = list,
-        atoms       = list,
-        residues    = list,
-        bonds       = list,
-        angles      = list,
-        dihedrals   = list,
-        impropers   = list,
-        cmaps       = list,
-        _anumb_to_atom = dict,
-        forcefield  = str,
-    )
-
-    _allowed_values = dict(
-        forcefield  = ['', 'charmm']
-    )
+class Molecule(object):
 
     def __init__(self):
-        self.chains    = []   
-        self.atoms     = []   
+        self.chains    = []
+        self.atoms     = []
         self.residues  = []
 
         self.bonds     = []
@@ -63,11 +39,11 @@ class Molecule(ValidateMixin):
                 print("no such atom number (%d) in the molecule" % (numb))
                 return False
 
-    
+
     def renumber_atoms(self):
 
         if len(self.atoms) != 0:
-            
+
             # reset the mapping
             self._anumb_to_atom = {}
 
@@ -78,45 +54,32 @@ class Molecule(ValidateMixin):
             print("the number of atoms is zero - no renumbering")
 
 
-
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Chain(ValidateMixin):
-    _valuetypes = dict(
+class Chain(object):
+    """
         name    = str,
         residues= list,
         molecule= Molecule
-    )
+    """
 
     def __init__(self):
         self.residues = []
 
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Residue(ValidateMixin):
-    _valuetypes = dict(
+
+class Residue(object):
+    """
         name    = str,
         number  = int,
         chain   = Chain,
         chain_name = str,
         atoms   = list,
-    )
+    """
 
     def __init__(self):
         self.atoms  = []
 
 
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Atom(ValidateMixin):
-    _valuetypes = dict(
+class Atom(object):
+    """
         name    = str,
         number  = int,
         flag    = str,        # HETATM
@@ -138,7 +101,7 @@ class Atom(ValidateMixin):
         resnumb = int,
         altloc  = str,         # per atoms
 
-    )
+    """
 
     def __init__(self):
 
@@ -157,105 +120,70 @@ class Atom(ValidateMixin):
 
 
 
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Param(ValidateMixin):
-    _valuetypes = dict(
+class Param(object):
+    """
         kind    = str,
         coeffs  = tuple,
-    )
-
-    _allowed_values = dict(
-        kind    = ['bond', 'angle', 'dihedral', 'improper', 'cmap' ],
-    )
+    """
 
     def __init__(self, kind):
         self.kind   = kind
+        assert kind in ('bond', 'angle', 'dihedral', 'improper', 'cmap' )
         self.coeffs = tuple()
 
 
 
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Bond(ValidateMixin):
-    _valuetypes = dict(
+class Bond(object):
+    """
         atom1   = Atom,
         atom2   = Atom,
         order   = int,     # if a bond is single/double or triple
         function= str,
         param   = Param
-    )
+    """
 
     def __init__(self):
         self.param = Param('bond')
 
 
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Angle(ValidateMixin):
-    _valuetypes = dict(
+class Angle(object):
+    """
         atom1   = Atom,
         atom2   = Atom,
         atom3   = Atom,
         param   = Param
-    )
+    """
 
     def __init__(self):
         self.param = Param('angle')
 
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Dihedral(ValidateMixin):
-    _valuetypes = dict(
+class Dihedral(object):
+    """
         atom1   = Atom,
         atom2   = Atom,
         atom3   = Atom,
         atom4   = Atom,
         param   = Param,       # shouldn't be used for charmm
         charmm_param = list,   # for charmm dihedrals with several multiplicities
-    )
+    """
 
     def __init__(self):
         self.param = Param('dihedral')
 
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class Improper(ValidateMixin):
-    _valuetypes = dict(
+class Improper(object):
+    """
         atom1   = Atom,
         atom2   = Atom,
         atom3   = Atom,
         atom4   = Atom,
         param   = Param
-    )
+    """
 
     def __init__(self):
         self.param = Param('improper')
 
-
-
-# -----------------------------------------------
-#
-# -----------------------------------------------
-class CMap(ValidateMixin):
-    _valuetypes = dict(
+class CMap(object):
+    """
         atom1   = Atom,
         atom2   = Atom,
         atom3   = Atom,
@@ -265,7 +193,7 @@ class CMap(ValidateMixin):
         atom7   = Atom,
         atom8   = Atom,
         param   = Param
-    )
+    """
 
     def __init__(self):
         self.param = Param('cmap')

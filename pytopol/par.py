@@ -1,13 +1,11 @@
 
 
-
-from .validate import ValidateMixin
 from collections import defaultdict
 import logging
 
 module_logger = logging.getLogger('mainapp.par')
 
-class ParType(ValidateMixin):
+class ParType(object):
     '''
     The self.data is a dictionary with the following format:
 
@@ -74,26 +72,11 @@ class ParType(ValidateMixin):
 
 
 
-    _valuetypes = dict(
-        _data                  = defaultdict,
-        name                   = str,              # 'bond', ...
-        symmetric_keys         = bool,             # in case of tuple keys, are the symmetric? 
-        multiple_value_per_key = bool,
-        _key_set               = set,
-        lgr = logging.Logger,
-    )
-
-
-    _allowed_values = dict (
-        # necessary to be enforced - lookup later depends on these names
-        name  = ['bond', 'angle', 'dihedral', 'improper', 'nonbonding'],
-    )
-
-
-
     def __init__(self, sym=False, mult=False, name=''):
-        self.symmetric_keys         = sym  
+        self.symmetric_keys         = sym
         self.multiple_value_per_key = mult
+
+        assert name in ['bond', 'angle', 'dihedral', 'improper', 'nonbonding']
         self.name = name
 
         self._data = defaultdict(list)      # (atype1, atype2) : [(coeffs)]

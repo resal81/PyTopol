@@ -1,8 +1,7 @@
 
 import os, logging, time
-from .psf import PSFSystem
-from .par import ParType
-from .validate import ValidateMixin
+from pytopol.psf import PSFSystem
+from pytopol.par import ParType
 
 
 module_logger = logging.getLogger('mainapp.charmmpar')
@@ -12,22 +11,26 @@ http://www.ks.uiuc.edu/Training/Tutorials/namd/namd-tutorial-unix-html/node23.ht
 '''
 
 
-class CharmmPar(ValidateMixin):
-    _valuetypes = dict(
-        fnames      = list,
-        bondpars    = ParType,
-        anglepars   = ParType,
-        dihedralpars= ParType,
-        improperpars= ParType,
-        nonbonding  = ParType,
-        lgr         = logging.Logger,
-    )
-    _allowed_values = dict()
-
-
-
+class CharmmPar(object):
+    """ A class for reading CHARMM PAR/PRM files. """
 
     def __init__(self, *args):
+        """ Constructor.
+
+        Args:
+            One or more strings. Each string specifies path to one par file.
+
+        Attributes:
+            lgr         : logging.Logger
+            fnames      : a list of paths to the par files
+            bondpars    : ParType, bonds
+            anglepars   : ParType, angles
+            dihedralpars: ParType, dihedrals
+            improperpars: ParType, impropers
+            nonbonding  : ParType, nonbonding
+            cmappars    : ParType, cmaps
+
+        """
 
         self.lgr = logging.getLogger('mainapp.charmmpar.CharmmPar')
         self.lgr.debug(">> entering CharmmPar")
@@ -52,16 +55,17 @@ class CharmmPar(ValidateMixin):
 
     def __repr__(self):
         return "%3d bonding, %3d angle, %3d dih, %3d imp, %3d nonbonding and %2d cmaps" % (
-                len(self.bondpars), len(self.anglepars), len(self.dihedralpars), 
+                len(self.bondpars), len(self.anglepars), len(self.dihedralpars),
                 len(self.improperpars), len(self.nonbonding), len(self.cmappars))
 
 
     def _parse_charmmpar(self, fname):
+        """ A method for parsing CHARMM PAR/PRM files. """
 
         self.lgr.debug("parsing parameter file: %s" % fname)
         t1 = time.time()
 
-        # sections to be parsed (CMAP will be parsed separately)
+        # sections of the par file (doesn't include CMAP, which will be parsed separately)
         main_parts = {
           'BOND':   {'nfields':(4,),     'nheader':2, 'cont':self.bondpars    },
           'ANGL':   {'nfields':(5,7),    'nheader':3, 'cont':self.anglepars   },
@@ -75,7 +79,7 @@ class CharmmPar(ValidateMixin):
 
         # check if the file exists
         if not os.path.exists(fname):
-            raise IOError("the '%s' chammpar file doesn't exist" % fname)
+            raise IOError("the '%s' CHARMM PAR file doesn't exist" % fname)
 
         # cache all of lines
         with open(fname) as f:
@@ -144,7 +148,7 @@ class CharmmPar(ValidateMixin):
 
             return True, "OK"
 
-        
+
         def _parse_cmap_lines(lines, cmappars):
             # assuming the cmap grid is 24x24
 
@@ -153,7 +157,7 @@ class CharmmPar(ValidateMixin):
             key = None
             for i, line in enumerate(lines):
                 if n % (24*24) == 0:
-                    
+
                     if len(p) >0:
                         if len(p) != 24 * 24:
                             print('warning - not enough item for the cmap', key)
@@ -209,7 +213,7 @@ class CharmmPar(ValidateMixin):
                     cm_lines.append(line)
                 else:
                     result, msg = _parse_par_line(line, _curr_par)
-                    
+
                     if result is False:
                         self.lgr.error(msg)
                         return False
@@ -260,11 +264,11 @@ class CharmmPar(ValidateMixin):
             for bond in mol.bonds:
                 at1 = bond.atom1.get_atomtype()
                 at2 = bond.atom2.get_atomtype()
-                
+
                 p = self.bondpars.get_parameter((at1, at2))
 
                 if len(p) != 1:
-                    msg = "error - bond: %s-%s : p is %s" % (at1, at2, p) 
+                    msg = "error - bond: %s-%s : p is %s" % (at1, at2, p)
                     if not panic_on_missing_param:
                         print(msg)
                         continue
@@ -353,7 +357,7 @@ class CharmmPar(ValidateMixin):
                 kpsi = kpsi * 2 * 4.184
                 improper.param.coeffs = (kpsi, psi0)
 
-            # c -- cmaps -- 
+            # c -- cmaps --
             for cmap in mol.cmaps:
                 at1 = cmap.atom1.get_atomtype()
                 at2 = cmap.atom2.get_atomtype()
@@ -365,7 +369,7 @@ class CharmmPar(ValidateMixin):
                 at8 = cmap.atom8.get_atomtype()
 
                 p = self.cmappars.get_parameter((at1, at2, at3, at4, at5, at6, at7, at8))
-                
+
                 if len(p) != 1:
                     msg = "error - cmap: %s-%s-%s-%s-%s-%s-%s-%s" % (at1, at2, at3, at4, at5, at6, at7, at8)
                     if not panic_on_missing_param:

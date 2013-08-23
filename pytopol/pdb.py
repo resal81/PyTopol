@@ -1,7 +1,6 @@
 
-from . import blocks
-from .utils import build_res_chain
-from .validate import ValidateMixin
+from pytopol import blocks
+from pytopol.utils import build_res_chain
 import os, logging, time
 
 
@@ -10,24 +9,23 @@ module_logger = logging.getLogger('mainapp.pdb')
 
 
 
-class PDBSystem(ValidateMixin):
-    _valuetypes = dict(
-        pdbfile = str,
-        molecules = tuple,
-        atoms = tuple,
-        lgr   = logging.Logger
-    )
-
-    _allowed_values = dict(
-    )
-
-    debug = False
-
+class PDBSystem(object):
 
     def __init__(self, pdbfile, guess_mols=False):
+        """ PDB parser.
+
+        Attributes:
+            pdbfile : str, path to the pdb file
+            molecules: tuple Molecules
+            atoms : tuple of Atoms
+            lgt : logging.Logger
+
+        """
+
+
         self.lgr = logging.getLogger('mainapp.pdb.PDBSystem')
         self.lgr.debug(">> entering PDBSystem")
-        
+
         self.pdbfile = pdbfile
         self.atoms   = tuple([])
         self.molecules = tuple([])
@@ -118,7 +116,7 @@ class PDBSystem(ValidateMixin):
 
         self.molecules = tuple(molecules)
 
-        
+
         t2 = time.time()
         self.lgr.debug("parsing took %4.1f seconds" % (t2-t1))
 

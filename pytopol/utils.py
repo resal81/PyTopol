@@ -1,10 +1,5 @@
 
-from . import blocks
-
-
-
-
-
+from pytopol import blocks
 
 def build_res_chain(m):
     # using a molecule object with atoms, builds residues and chains
