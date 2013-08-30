@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 '''
 This scritp automates the conversion of PSF file to GROMACS topology.
@@ -45,12 +46,12 @@ def main():
     # the first element should be the path to the psf file
     psffile = sys.argv[1]
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) >= 3:
         if sys.argv[-1] == '-v':
             debug_level = logging.DEBUG
             prmfiles = sys.argv[2:-1]
         else:
-            debug_level = logging.CRITICAL
+            debug_level = logging.ERROR
             prmfiles = sys.argv[2:]
 
     # setup logging
@@ -59,6 +60,9 @@ def main():
 
     # read the PSF file
     psfsys = psf.PSFSystem(psffile, pdbfile=None, each_chain_is_molecule=True)
+    if len(psfsys.molecules) == 0:
+        lgr.error("could not build PSF system - see above")
+        return
 
     # read all the parameter files
     par = charmmpar.CharmmPar(*prmfiles)

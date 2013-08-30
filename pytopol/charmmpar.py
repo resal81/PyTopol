@@ -44,7 +44,6 @@ class CharmmPar(object):
         self.nonbonding   = ParType(sym=False,mult=False, name='nonbonding')
         self.cmappars     = ParType(sym=False,mult=False, name='cmap')
 
-
         for p in args:
             self._parse_charmmpar(p)
             self.lgr.debug(self.__repr__())
@@ -171,6 +170,14 @@ class CharmmPar(object):
                 else:
                     p += list(map(float, line.split()))
                     n = len(p)
+
+            # last one
+            if len(p) > 0:
+                if len(p) != 24 * 24:
+                    print('warning - not enough item for the cmap', key)
+                cmappars.add_parameter(key, p)
+
+
 
         # ---------------------------------------------------------------------
 

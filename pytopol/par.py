@@ -76,7 +76,7 @@ class ParType(object):
         self.symmetric_keys         = sym
         self.multiple_value_per_key = mult
 
-        assert name in ['bond', 'angle', 'dihedral', 'improper', 'nonbonding']
+        assert name in ['bond', 'angle', 'dihedral', 'improper', 'nonbonding', 'cmap']
         self.name = name
 
         self._data = defaultdict(list)      # (atype1, atype2) : [(coeffs)]

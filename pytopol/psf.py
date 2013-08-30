@@ -3,8 +3,8 @@ This module provides tools for working with PSF files.
 
 """
 
-from pytopl.utils import build_res_chain
-from pytopl.pdb import PDBSystem
+from pytopol.utils import build_res_chain
+from pytopol.pdb import PDBSystem
 from pytopol import blocks
 
 import os
@@ -143,7 +143,6 @@ class PSFSystem(object):
 
         # check if the format is valid
         if psffmt is False:
-            self.lgr.error("not a known psf format")
             return False
 
         elif psffmt not in list(psf_formats.keys()):
@@ -165,7 +164,7 @@ class PSFSystem(object):
                     if line.split()[1].strip(':') in known_sections:
                         _sec = line.split()[1].strip(':')
                     else:
-                        self.lgr.debug("unknown section - skipping it: '%s'" % line)
+                        self.lgr.debug("skipping section`: '%s'" % line)
                         _sec = None
                     continue
 
@@ -304,8 +303,8 @@ class PSFSystem(object):
                 if fields[-1] == 'NAMD':
                     return 'NAMD'
                 else:
-                    self.lgr.error("could not find NAMD keywork at the end of"
-                                   "first line in the psf file")
+                    self.lgr.error("could not find NAMD keywork at the end of "
+                                   "the first line in the psf file")
                     return False
 
 
