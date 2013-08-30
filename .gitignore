@@ -44,4 +44,13 @@ docs/_build
 # 
 *.itp
 *.top
-test/systems
+test/1_*
+test/2_*
+test/3_*
+test/4_*
+test/5_*
+test/6_*
+test/7_*
+test/8_*
+test/9_*
+test/systems/prep/glucl*
