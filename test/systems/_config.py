@@ -29,13 +29,23 @@ systems = {
                 'prep/par_wation.par'],
         'info': 'Cholestrol in TIP3P water using CHARMM 36 (3810 atoms)',
     },
-    '0_glucl': {
-        'psf':'prep/glucl.psf',
-        'pdb':'prep/glucl.pdb',
-        'pars':['prp/par_all36_prot.prm', 'prep/par_all36_lipid.prm',
-                'prep/par_all36_cgenff.prm', 'prep/par_wation.par'],
-        'info': 'GluCl in TIP3P water and POPC membrane using CHARMM 36 (163394 atoms)',
+    '0_memb': {
+        'psf':'prep/memb_50A.psf',
+        'pdb':'prep/memb_5A.pdb',
+        'pars':['prep/par_all36_prot.prm',
+                'prep/par_all36_lipid.prm',
+                'prep/par_all36_cgenff.prm',
+                'prep/par_chol.par',
+                'prep/par_wation.par'],
+        'info': '50A Membrane made with CHARMM-GUI using CHARMM 36 (1359 residues, 15285 atoms)',
     },
+    # '0_glucl': {
+    #     'psf':'prep/glucl.psf',
+    #     'pdb':'prep/glucl.pdb',
+    #     'pars':['prp/par_all36_prot.prm', 'prep/par_all36_lipid.prm',
+    #             'prep/par_all36_cgenff.prm', 'prep/par_wation.par'],
+    #     'info': 'GluCl in TIP3P water and POPC membrane using CHARMM 36 (163394 atoms)',
+    # },
 
 }
 

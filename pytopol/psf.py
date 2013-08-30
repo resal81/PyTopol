@@ -124,7 +124,7 @@ class PSFSystem(object):
         psf_formats = {
             'NAMD': {
                 'sections': {
-                    '!NATOM':  {'type':'atom',    'n':9,'multiple':False,'func':self._atom_line},
+                    '!NATOM':  {'type':'atom',    'n':(9,11),'multiple':False,'func':self._atom_line},
                     '!NBOND':  {'type':'bond',    'n':2,'multiple':True, 'func':self._badi_line},
                     '!NTHETA': {'type':'angle',   'n':3,'multiple':True, 'func':self._badi_line},
                     '!NPHI':   {'type':'dihedral','n':4,'multiple':True, 'func':self._badi_line},
@@ -296,16 +296,12 @@ class PSFSystem(object):
             return False
         else:
             fields = _line.split()
-            if len(fields) not in (1, 2, 3):
-                self.lgr.error("the firs line of psf file must have 1 to 3 fields")
-                return False
+            if 'NAMD' in fields:
+                return 'NAMD'
             else:
-                if fields[-1] == 'NAMD':
-                    return 'NAMD'
-                else:
-                    self.lgr.error("could not find NAMD keywork at the end of "
-                                   "the first line in the psf file")
-                    return False
+                self.lgr.error("could not find NAMD keywork in "
+                                "the first line in the psf file")
+                return False
 
 
 
@@ -321,12 +317,17 @@ class PSFSystem(object):
         """
         if psffmt == 'NAMD':
             f = line.split()
-            if len(f) != conf['n']:
+            if len(f) not in conf['n']:
                 self.lgr.error("(e) the number of elements in atom line is '%d, expected to be %d" % (
                     len(f), conf['n']))
                 return False
 
-            atnumb, segname, resnumb, resname, atname, attype, charge, mass, tmp = f
+            if len(f) == 9:
+                atnumb, segname, resnumb, resname, atname, attype, charge, mass, tmp = f
+            elif len(f) == 11:
+                atnumb, segname, resnumb, resname, atname, attype, charge, mass, tmp1, tmp2, tmp3 = f
+            else:
+                raise NotImplementedError
             a = blocks.Atom()
             a.name      = atname
             a.number    = int(atnumb)

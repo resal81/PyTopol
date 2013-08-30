@@ -30,8 +30,6 @@ def run_command(command, logfile='runlog.log'):
     return stdout, status
 
 
-
-
 def run_namd(k, logfile):
     psf = config.systems[k]['psf']
     pdb = config.systems[k]['pdb']
@@ -50,7 +48,6 @@ def run_namd(k, logfile):
         return stdout, False
     else:
         return stdout, True
-
 
 
 def parse_namd_output(output):
@@ -75,6 +72,7 @@ def parse_namd_output(output):
                 result['potential'] = E[11]
 
     return result
+
 
 def run_psf2top(k, logfile):
     psf = config.systems[k]['psf']
@@ -290,13 +288,7 @@ def main():
         print
 
 
-
-
-
-
-
-
-
-main()
+if __name__ == '__main__':
+    main()
 
 
