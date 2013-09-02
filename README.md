@@ -5,9 +5,10 @@ Reza Salari - [Brannigan Lab](http://branniganlab.org)
 ### Introduction 
 
 **PyTopol** provides utilities to convert certain molecular topologies to 
-each other. Currently it supports converting CHARMM `psf` files (`xplor` format) to GROMACS 
-topology format. If you'd like to use GROMACS topologies in NAMD, plese 
-see [here](http://www.ks.uiuc.edu/Research/namd/2.9/ug/node14.html).
+each other. Currently it supports converting CHARMM `psf` files (`xplor` format) 
+to GROMACS topology format through the `psf2top.py` utility. If you'd like 
+to use GROMACS topologies in NAMD, plese see 
+[here](http://www.ks.uiuc.edu/Research/namd/2.9/ug/node14.html).
 
 PyTopol follows a different approach than the force-field conversion tools and 
 is intended to convert the full-topology of a molecule from one format to
@@ -20,7 +21,7 @@ PyTopol is currently in *alpha stage*. The results for several
 systems are shown below which are encouraging. However, before using it for
 production simulations, more testing is needed. 
 
-Current version is 0.1.0.
+Current version is 0.1.0. All 0.1.x versions will be considered alpha.
 
 
 ### Feedback
