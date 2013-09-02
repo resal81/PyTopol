@@ -64,16 +64,16 @@ You can add `-v` for debug information.
 ## Notes 
 
 * `psf2top.py` converts the `psf` file to GROMACS topology format. It creates one
- `top.top` plus one or multiple `itp` files. Each segment in the `psf` file is converted 
+ `top.top` plus one or more `itp` files. Each segment in the `psf` file is converted 
  to one `itp` file. 
 
-* `psf2top.py` only accepts NAMD formatted `psf` files, where the columns in the
+* `psf2top.py` only accepts `xplor` formatted `psf` files (used for NAMD), where the columns in the
   atoms section of the `psf` file are separated by at least one space. If this
   is the case for your `psf` file, make sure there is a `NAMD` keyword in the
   first line of the `psf` file.
 
-* You should provide all CHARMM parameter files for all the atoms in your `psf`
-  file. This typically corresponds to the parameter files that you use for your system
+* You should provide all of CHARMM parameter files for the atoms in your `psf`
+  file. These correspond to the parameter files that you use for your system
   when running the NAMD simulation. 
 
 * The CHARMM stream files (with `str` suffix) are not supported. These are files that typically
@@ -81,14 +81,14 @@ You can add `-v` for debug information.
   parameter section in a separate file before giving it to `psf2top.py`.
 
 * For the CHARMM parameter files, the `NBFIX` and `HBOND` sections are
- currently ignored.
+  ignored.
 
 * If you use [CHARMM-GUI](http://www.charmm-gui.org/?doc=input/membrane) to generate inputs,
-  make sure to use the `xplore` format for the `psf` file.
+  make sure to use the generated `xplor` format for the `psf` file.
 
 * Remove water molecules from the `psf` file before conversion. The tests for water topology
   conversion do not quite pass yet (see below). You can use `editconf` and `genbox` to add
-  water to the system later on.
+  water to the system later on in GROMACS.
 
 
 
@@ -158,6 +158,8 @@ Notes:
 *  The `psf` files for these systems are in `test/systems`.
 *  For more info on automation of these tests, see `test/systems/README.md`.
 *  Energies are in kcal/mol.
+*  `Diff` is the absolute difference (i.e. `gromacs-namd`) and `%Diff` is 
+   `(gromacs-namd)/namd * 100`.
 
 POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
 
@@ -232,7 +234,7 @@ There are many ways you can help to improve **PyTopol**:
 
 
 ## ToDo 
-* Why the difference in bonding energies of water box is rather big?
+* Why the absolute difference in bonding energies of water box is rather big?
 * More tests
 
 ## Acknowledgement 
