@@ -18,7 +18,7 @@ MD packages.
 ### Current stage
 PyTopol is currently in *alpha stage*. The results for several 
 systems are shown below which are encouraging. However, before using it for
-production run simulations, more testing is needed. 
+production simulations, more testing is needed. 
 
 Current version is 0.1.0.
 
@@ -44,7 +44,7 @@ of your Python distribution. Make sure this directory is in your path.
 
 #### Method 2 - clone the git repo 
 
-    $ git clone http://github.com/resal81/pytopol
+    $ git clone https://github.com/resal81/PyTopol.git
     $ cd pytopol 
     $ export PYTHONPATH=`pwd`:$PYTHONPATH
     $ cd scripts 
