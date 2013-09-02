@@ -21,7 +21,7 @@ PyTopol is currently in *alpha stage*. The results for several
 systems are shown below which are encouraging. However, before using it for
 production simulations, more testing is needed. 
 
-Current version is 0.1.0. All 0.1.x versions will be considered alpha.
+Current version is 0.1.1. All 0.1.x versions will be considered alpha.
 
 
 ### Feedback
