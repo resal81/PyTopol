@@ -46,7 +46,7 @@ of your Python distribution. Make sure this directory is in your path.
 #### Method 2 - clone the git repo 
 
     $ git clone https://github.com/resal81/PyTopol.git
-    $ cd pytopol 
+    $ cd PyTopol 
     $ export PYTHONPATH=`pwd`:$PYTHONPATH
     $ cd scripts 
     $ python psf2top.py -p psffile -c charmm_prm1 [charmm_prm2 ...] [-v]
