@@ -5,7 +5,7 @@ Reza Salari - [Brannigan Lab](http://branniganlab.org)
 ### Introduction 
 
 **PyTopol** provides utilities to convert certain molecular topologies to 
-each other. Currently it supports converting NAMD `psf` files to GROMACS 
+each other. Currently it supports converting CHARMM `psf` files (`xplor` format) to GROMACS 
 topology format. If you'd like to use GROMACS topologies in NAMD, plese 
 see [here](http://www.ks.uiuc.edu/Research/namd/2.9/ug/node14.html).
 
@@ -18,7 +18,9 @@ MD packages.
 ### Current stage
 PyTopol is currently in *alpha stage*. The results for several 
 systems are shown below which are encouraging. However, before using it for
-production run simulations, more testing is required. 
+production run simulations, more testing is needed. 
+
+Current version is 0.1.0.
 
 
 ### Feedback
@@ -36,6 +38,9 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
     $ pip install pytopol 
     $ psf2top.py -p psffile -c charmm_prm1 [charmm_prm2 ...] [-v]
+
+Note that in this method `psf2top.py` will be installed in the `bin` directory 
+of your Python distribution. Make sure this directory is in your path.
 
 #### Method 2 - clone the git repo 
 
