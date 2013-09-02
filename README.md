@@ -87,7 +87,7 @@ You can add `-v` for debug information.
   make sure to use the `xplore` format for the `psf` file.
 
 * Remove water molecules from the `psf` file before conversion. The tests for water topology
-  conversion do not quite pass (see below). You can use `editconf` and `genbox` to add
+  conversion do not quite pass yet (see below). You can use `editconf` and `genbox` to add
   water to the system later on.
 
 
@@ -149,16 +149,14 @@ run                 0
 ```
 
 
-#### Results 
+#### Results of select systems
 
 Notes:
+
 *  For these tests, first the `psf` file was created and then converted to
   GROMACS format.
-
 *  The `psf` files for these systems are in `test/systems`.
-
 *  For more info on automation of these tests, see `test/systems/README.md`.
-
 *  Energies are in kcal/mol.
 
 POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
