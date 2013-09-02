@@ -36,15 +36,15 @@ def _setup_logging(debug_level=logging.DEBUG):
 
 def print_note():
     note = '''
-----------------------------------------------------------------------------
-    PyTopol version %s. 
+    ------------------------------------------------------------------------
+    PyTopol version %s.
 
-    Please note that this version is considered alpha and the generated 
-    topologies should be validated before being used in production  
+    Please note that this version is considered alpha and the generated
+    topologies should be validated before being used in production
     simulations.
 
-    For more info, please see: http://github.com/resal81/pytopol 
-----------------------------------------------------------------------------
+    For more info, please see: http://github.com/resal81/pytopol
+    ------------------------------------------------------------------------
     '''
 
     print(note % version)
@@ -54,7 +54,7 @@ def main():
 
     if len(sys.argv) <= 1:
         usage = '\nUse -h for more info. Example run:\n'
-        usage += '  psf2top.py -p psffile -c charmm_prm1 [charmm_prm2 ...] [-v]' 
+        usage += '  psf2top.py -p psffile -c charmm_prm1 [charmm_prm2 ...] [-v]'
         print usage
         return
 
@@ -65,7 +65,7 @@ def main():
     p.add_argument('-c', default=[None], action='store', type=str, nargs='*',
     	help='charmm parameter files')
     p.add_argument('-v', action='store_true', help='verbose output', default=False)
-    
+
     args = p.parse_args()
 
     # setup logging
@@ -94,6 +94,7 @@ def main():
 
     lgr.debug('<< exiting main \n')
 
+    print('Done.')
 
 main()
 

@@ -30,19 +30,19 @@ class PyTest(TestCommand):
         sys.exit(errno)
 
 
-readme = open('README.md').read()
+#readme = open('README.md').read()
 doclink = """
 Documentation
 =============
 
-The full documentation is at http://pytopol.rtfd.org."""
+Plese see http://github.com/resal81/pytopol"""
 history = open('HISTORY.rst').read().replace('.. :changelog:', '')
 
 setup(
     name='pytopol',
     version=pytopol.__version__,
     description='"Library for converting molecular topologies"',
-    long_description=readme + '\n\n' + doclink + '\n\n' + history,
+    long_description= doclink + '\n\n' + history,
     author='Reza Salari',
     author_email='rezasalari@rutgers.edu',
     url='https://github.com/resal81/pytopol',
