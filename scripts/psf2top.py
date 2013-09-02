@@ -74,7 +74,7 @@ def main():
     if len(sys.argv) <= 1:
         usage = '\nUse -h for more info. Example run:\n'
         usage += '  psf2top.py -p psffile -c charmm_prm1 [charmm_prm2 ...] [-v]'
-        print usage
+        print(usage)
         return
 
     # interface
