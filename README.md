@@ -236,7 +236,8 @@ There are many ways you can help to improve **PyTopol**:
 
 ## ToDo 
 * Why the absolute difference in bonding energies of water box is rather big?
-* More tests
+* More tests.
+* Setup test coverage, tox.ini and travis.yaml.
 
 ## Acknowledgement 
 * Energy conversion factors are from `charmm2gromacs-pvm.py` script by Par Bjelkmar, 
