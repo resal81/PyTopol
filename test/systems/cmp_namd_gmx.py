@@ -57,7 +57,7 @@ def parse_namd_output(output):
         if line.startswith('ENERGY:'):
             f = line.split()
             if f[1] == '0':
-                E = map(float, f[2:])
+                E = list(map(float, f[2:]))
                 result['bond']      = E[0]
                 result['angle']     = E[1]
                 result['dihedral']  = E[2]
@@ -230,7 +230,7 @@ def main():
             config.systems[k]['pars'][i] = os.path.abspath(m)
 
 
-        print ('running system: %s' % k)
+        print(('running system: %s' % k))
 
         # make a subfolder
         os.mkdir(k)
@@ -287,20 +287,25 @@ def main():
         if config.systems[k]['skip'] == True:
             continue
 
-        print '%s - %s' % (k, config.systems[k]['info'])
-        print '%-10s   %-10s   %-10s  %-9s' % (k, 'NAMD', 'GROMACS', 'Diff (%)')
+        print(('%s - %s' % (k, config.systems[k]['info'])))
+        print(('{:10s}   {:>10s}   {:>10s}   {:>9s}  {:>9s}'.format(
+            k, 'NAMD', 'GROMACS', 'Diff', '%Diff')) )
         for m in ('bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'):
             namd = config.systems[k]['namd_result'][m]
             gromacs = config.systems[k]['gromacs_result'][m]
-            
-            if (abs(gromacs - namd) < 0.01) and abs(namd)<0.01:
-                diff = '0.0'
-            else:
-                diff = '%5.1f' % (((gromacs-namd)/namd) * 100.0)
-            s = '%10s   %10.1f   %10.1f   %9s' % (m, namd, gromacs, diff)
-            print s
 
-        print
+            diff =  gromacs - namd
+            
+            if (abs(gromacs - namd) < 0.01):
+                diffp = '0.0'
+            elif abs(namd) <= 0.001:
+                diffp = 'NA'
+            else:
+                diffp = '%5.1f' % (((gromacs-namd)/namd) * 100.0)
+            s = '%10s   %10.1f   %10.1f   %9.1f  %9s' % (m, namd, gromacs, diff, diffp)
+            print(s)
+
+        print(' ')
 
 
 if __name__ == '__main__':
