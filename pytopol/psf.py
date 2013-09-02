@@ -141,9 +141,10 @@ class PSFSystem(object):
                 psffmt = self._find_psf_format(line)
                 break
 
-        # check if the format is valid
+        # check if the format is valid  TODO
         if psffmt is False:
-            return False
+            psffmt = 'NAMD'
+            #return False
 
         elif psffmt not in list(psf_formats.keys()):
             self.lgr.error("psf format '%s' is not supported" % (psffmt))
@@ -299,8 +300,9 @@ class PSFSystem(object):
             if 'NAMD' in fields:
                 return 'NAMD'
             else:
-                self.lgr.error("could not find NAMD keywork in "
-                                "the first line in the psf file")
+                # TODO
+                #self.lgr.error("could not find NAMD keywork in "
+                #                "the first line in the psf file")
                 return False
 
 

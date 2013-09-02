@@ -12,7 +12,7 @@ import os
 import shutil
 import unittest
 
-from pytopol import pytopol
+import pytopol
 
 
 class TestPytopol(unittest.TestCase):

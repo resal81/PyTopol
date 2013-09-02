@@ -418,10 +418,35 @@ class SystemToGroTop(object):
         return result
 
     def _make_pairs(self,m):
+        _bonds = []
+        for bond in m.bonds:
+            _bonds.append((bond.atom1.number, bond.atom2.number))
+
+        _angles = []
+        for ang in m.angles:
+            _angles.append((ang.atom1.number, ang.atom3.number))
+
+        _bonds = set(_bonds)
+        _angles = set(_angles)
+
+        _pairs = []
+
         result = []
         for dih in m.dihedrals:
             fu = self.functions[m.forcefield]['pairs']
-            line = self.formats['pairs'].format(dih.atom1.number, dih.atom4.number, fu)
+            p1 = dih.atom1.number
+            p4 = dih.atom4.number
+
+            if (p1,p4) in _bonds or (p1,p4) in _angles or \
+               (p4,p1) in _bonds or (p4,p1) in _angles:
+                continue
+
+            if (p1,p4) in _pairs or (p4,p1) in _pairs:
+                continue
+
+            _pairs.append((p1,p4))
+
+            line = self.formats['pairs'].format(p1, p4, fu)
             result.append(line)
 
         result.insert(0,'; %5d pairs\n' % len(result))

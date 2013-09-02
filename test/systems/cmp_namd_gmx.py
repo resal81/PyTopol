@@ -79,7 +79,11 @@ def run_psf2top(k, logfile):
     pdb = config.systems[k]['pdb']
     #pars = ' '.join(['%s' % x for x in config.systems[k]['pars']])
 
-    command = ['%s' % config.paths['psf2top'], psf] + config.systems[k]['pars'] + ['-v']
+    command = ['%s' % config.paths['psf2top']] + \
+              ['-p', psf] + \
+              ['-c'] + config.systems[k]['pars'] + \
+              ['-v']
+
     stdout, status = run_command(command, logfile)
     if not status or 'ERROR' in stdout:
         print (stdout)
@@ -211,8 +215,13 @@ def main():
     print(' ')
 
     for k in systems:
+        
+
         if os.path.exists(k):
             shutil.rmtree(k)
+
+        if config.systems[k]['skip'] == True:
+            continue
 
         # get the absolute paths
         config.systems[k]['psf'] = os.path.abspath(config.systems[k]['psf'])
@@ -234,13 +243,13 @@ def main():
         # make the gromacs topology
         output, ok = run_psf2top(k, logfile)
         if not ok:
-            print('an error occured when using psf2top... exiting.')
+            print('An error occured when using psf2top... exiting.')
             return
 
         # run gromacs
         output, ok = run_gromacs(k, logfile)
         if not ok:
-            print('an error occured when running gromacs... exiting.')
+            print('An error occured when running gromacs... exiting.')
             return
         else:
             result = parse_gromacs_output()
@@ -257,9 +266,11 @@ def main():
         # run namd
         output, ok = run_namd(k, logfile)
         if not ok:
-            print('an error occured when running namd... exiting.')
+            print('An error occured when running namd... exiting.')
             return
         else:
+            with open('namd.out', 'w') as f:
+                f.writelines([output])
             result = parse_namd_output(output)
             config.systems[k]['namd_result'] = result
 
@@ -273,15 +284,19 @@ def main():
 
     print(' ')
     for k in systems:
+        if config.systems[k]['skip'] == True:
+            continue
+
         print '%s - %s' % (k, config.systems[k]['info'])
         print '%-10s   %-10s   %-10s  %-9s' % (k, 'NAMD', 'GROMACS', 'Diff (%)')
         for m in ('bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'):
             namd = config.systems[k]['namd_result'][m]
             gromacs = config.systems[k]['gromacs_result'][m]
-            if namd == 0:
-                diff = 'NA'
+            
+            if (abs(gromacs - namd) < 0.01) and abs(namd)<0.01:
+                diff = '0.0'
             else:
-                diff = '%6.3f' % (((gromacs-namd)/namd) * 100.0)
+                diff = '%5.1f' % (((gromacs-namd)/namd) * 100.0)
             s = '%10s   %10.1f   %10.1f   %9s' % (m, namd, gromacs, diff)
             print s
 

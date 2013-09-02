@@ -5,10 +5,10 @@ This scritp automates the conversion of PSF file to GROMACS topology.
 
 '''
 
-
-import sys
+import argparse, sys, os
 import logging
 from pytopol import charmmpar, grotop, psf
+from pytopol import __version__ as version
 
 
 def _setup_logging(debug_level=logging.DEBUG):
@@ -25,56 +25,77 @@ def _setup_logging(debug_level=logging.DEBUG):
     lgr.setLevel(debug_level)
 
     frmt = logging.Formatter('%(name)-30s - %(levelname)-8s - %(message)s')
-
     ch = logging.StreamHandler()
     ch.setLevel(debug_level)
-
     ch.setFormatter(frmt)
 
     lgr.addHandler(ch)
+
     return lgr
 
 
-def main():
-    """ Main function. """
+def print_note():
+    note = '''
+----------------------------------------------------------------------------
+    PyTopol version %s. 
 
-    if len(sys.argv) <= 2:
-        usage = 'python psf2top.py psffile charmm_prm1 [charmm_prm2 ...]'
-        print('\nUsage:\n\t %s \n' % usage)
+    Please note that this version is considered alpha and the generated 
+    topologies should be validated before being used in production  
+    simulations.
+
+    For more info, please see: http://github.com/resal81/pytopol 
+----------------------------------------------------------------------------
+    '''
+
+    print(note % version)
+
+def main():
+    print_note()
+
+    if len(sys.argv) <= 1:
+        usage = '\nUse -h for more info. Example run:\n'
+        usage += '  psf2top.py -p psffile -c charmm_prm1 [charmm_prm2 ...] [-v]' 
+        print usage
         return
 
-    # the first element should be the path to the psf file
-    psffile = sys.argv[1]
-
-    if len(sys.argv) >= 3:
-        if sys.argv[-1] == '-v':
-            debug_level = logging.DEBUG
-            prmfiles = sys.argv[2:-1]
-        else:
-            debug_level = logging.ERROR
-            prmfiles = sys.argv[2:]
+    # interface
+    formatter = argparse.ArgumentDefaultsHelpFormatter
+    p = argparse.ArgumentParser(formatter_class=formatter)
+    p.add_argument('-p', type=str, help='psf file')
+    p.add_argument('-c', default=[None], action='store', type=str, nargs='*',
+    	help='charmm parameter files')
+    p.add_argument('-v', action='store_true', help='verbose output', default=False)
+    
+    args = p.parse_args()
 
     # setup logging
-    lgr = _setup_logging(debug_level)
+    log_level = logging.DEBUG if args.v else logging.ERROR
+    lgr = _setup_logging(log_level)
     lgr.debug('>> started main')
 
     # read the PSF file
+    psffile = args.p
     psfsys = psf.PSFSystem(psffile, pdbfile=None, each_chain_is_molecule=True)
     if len(psfsys.molecules) == 0:
         lgr.error("could not build PSF system - see above")
         return
 
     # read all the parameter files
+    prmfiles = args.c
     par = charmmpar.CharmmPar(*prmfiles)
 
     # add parameters to the system
-    par.add_params_to_system(
-        psfsys, panic_on_missing_param=True, forcefield='charmm')
+    par.add_params_to_system(psfsys, panic_on_missing_param=True, forcefield='charmm')
 
     # convert system to gromacs format
     grotop.SystemToGroTop(psfsys)
+    if not os.path.exists('top.top') or not os.path.exists('itp_mol_01.itp'):
+    	lgr.error("could not build GROAMCS top file - see above")
 
-    lgr.debug('<< done \n')
+    lgr.debug('<< exiting main \n')
 
 
 main()
+
+
+

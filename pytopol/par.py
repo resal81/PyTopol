@@ -7,7 +7,7 @@ module_logger = logging.getLogger('mainapp.par')
 
 class ParType(object):
     '''
-    The self.data is a dictionary with the following format:
+    For CHARMM, the self.data is a dictionary with the following format:
 
         - bonds
                 !V(bond) = Kb(b - b0)**2
@@ -111,7 +111,7 @@ class ParType(object):
 
 
     def get_parameter(self, key):
-        if len(self._key_set) == 0 and len(list(self._data.keys()))>0:
+        if len(self._key_set) == 0 and len(list(self._data.keys())) > 0:
             self._key_set = set(self._data.keys())
 
 
@@ -122,16 +122,6 @@ class ParType(object):
                 if key[::-1] in self._key_set:
                     return self._data[key[::-1]]
 
-        return []
-
-
-        # returns a list
-        if key in list(self._data.keys()):
-            return self._data[key]
-        else:
-            if isinstance(key, tuple) and self.symmetric_keys:
-                if key[::-1] in list(self._data.keys()):
-                    return self._data[key[::-1]]
         return []
 
 

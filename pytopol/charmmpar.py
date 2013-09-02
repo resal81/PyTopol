@@ -186,7 +186,7 @@ class CharmmPar(object):
         _main_sections = tuple(main_parts.keys())
         _curr_par      = None
 
-        cm_lines = []
+        cm_lines = [] # for caching CMAP lines
 
         for ln, line in enumerate(_lines):
             if '!' in line:
@@ -249,10 +249,10 @@ class CharmmPar(object):
 
                 p = self.nonbonding.get_parameter(atom.atomtype)
                 if len(p) != 1:
-                    msg = "error: for atom type %s, the available parameters are %s" % (
-                            atom.atomtype,p)
+                    msg = "for atom type %s, %d parameters found (expecting 1, found: %s)" % (
+                            atom.atomtype, len(p), p)
                     if not panic_on_missing_param:
-                        print(msg)
+                        self.lgr.error(msg)
                         continue
                     else:
                         raise ValueError(msg)
@@ -275,14 +275,11 @@ class CharmmPar(object):
                 p = self.bondpars.get_parameter((at1, at2))
 
                 if len(p) != 1:
-                    msg = "error - bond: %s-%s : p is %s" % (at1, at2, p)
+                    msg = "for bond %s-%s, %d parameters found (expecting 1, found %s)" % (at1, at2, len(p), p)
                     if not panic_on_missing_param:
-                        print(msg)
+                        self.lgr.error(msg)
                         continue
                     else:
-                        #print self.bondpars._data.keys()
-                        #for key in self.bondpars._data.keys():
-                        #    print key, self.bondpars._data[key]
                         raise ValueError(msg)
 
                 assert len(p[0]) == 2
@@ -300,9 +297,10 @@ class CharmmPar(object):
                 p = self.anglepars.get_parameter((at1, at2, at3))
 
                 if len(p) != 1:
-                    msg = "error - angle: %s-%s-%s" % (at1, at2, at3)
+                    msg = "for angle %s-%s-%s, %d parameters found (expecting 1, found %s)" % (
+                        at1, at2, at3, len(p),p)
                     if not panic_on_missing_param:
-                        print(msg)
+                        self.lgr.error(msg)
                         continue
                     else:
                         raise ValueError(msg)
@@ -327,9 +325,9 @@ class CharmmPar(object):
                 p = self.dihedralpars.get_charmm_dihedral_wildcard((at1, at2, at3, at4))
 
                 if len(p) == 0:
-                    msg = "error - dihedral: %s-%s-%s-%s" % (at1, at2, at3, at3)
+                    msg = "for dihedral %s-%s-%s-%s no parameters was found" % (at1, at2, at3, at3)
                     if not panic_on_missing_param:
-                        print(msg)
+                        self.lgr.error(msg)
                         continue
                     else:
                         raise ValueError(msg)
@@ -352,9 +350,10 @@ class CharmmPar(object):
                 p = self.improperpars.get_charmm_improper_wildcard((at1, at2, at3, at4))
 
                 if len(p) != 1:
-                    msg = "error - improper: %s-%s-%s-%s" % (at1, at2, at3, at4)
+                    msg = "for improper %s-%s-%s-%s, %d parameters found (expecting 1, found %s)" % (
+                        at1, at2, at3, at4, len(p), p)
                     if not panic_on_missing_param:
-                        print(msg)
+                        self.lgr.error(msg)
                         continue
                     else:
                         raise ValueError(msg)
@@ -364,7 +363,7 @@ class CharmmPar(object):
                 kpsi = kpsi * 2 * 4.184
                 improper.param.coeffs = (kpsi, psi0)
 
-            # c -- cmaps --
+            # -- cmaps --
             for cmap in mol.cmaps:
                 at1 = cmap.atom1.get_atomtype()
                 at2 = cmap.atom2.get_atomtype()
@@ -378,15 +377,15 @@ class CharmmPar(object):
                 p = self.cmappars.get_parameter((at1, at2, at3, at4, at5, at6, at7, at8))
 
                 if len(p) != 1:
-                    msg = "error - cmap: %s-%s-%s-%s-%s-%s-%s-%s" % (at1, at2, at3, at4, at5, at6, at7, at8)
+                    msg = "for cmap: %s-%s-%s-%s-%s-%s-%s-%s, %d parameters found (expecting 1, found %s)" % (
+                        at1, at2, at3, at4, at5, at6, at7, at8, len(p), p)
                     if not panic_on_missing_param:
-                        print(msg, len(p))
+                        self.lgr.error(msg, len(p))
                         continue
                     else:
-                        print('len(p): ', len(p))
-                        print('known keys:')
-                        for k in list(self.cmappars._data.keys()):
-                            print(k)
+                        # print('known keys:')
+                        # for k in list(self.cmappars._data.keys()):
+                        #     print(k)
                         raise ValueError(msg)
 
                 assert len(p[0]) == 24*24, '%d != %d' % (len(p[0]), 24*24)
