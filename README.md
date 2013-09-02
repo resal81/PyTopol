@@ -245,6 +245,8 @@ Per Larsson, Michel Cuendet, Berk Hess and Erik Lindahl.
 ## Similar tools
 * [charmm2gromacs](http://www.gromacs.org/@api/deki/files/185/=charmm2gromacs-pvm.py) 
   is a tool for converting CHARMM force field to GROMACS.
+* [psfgen-top](https://github.com/benlabs/psfgen-top) patches for psfgen (NAMD 2.7 and 2.8)
+  to create gromacs topology.
 * [SwissParam](http://www.swissparam.ch/) converts `mol2` format to CHARMM and GROMACS
   formats.
 
