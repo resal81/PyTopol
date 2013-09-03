@@ -86,11 +86,11 @@ You can add `-v` for debug information.
 * For the CHARMM parameter files, the `NBFIX` and `HBOND` sections are
   ignored.
 
-* Currently the `xplor`-formatted *parameter files* are not supported (e.g. multiple 
-  parameters per heading).
-
 * If you use [CHARMM-GUI](http://www.charmm-gui.org/?doc=input/membrane) to generate inputs,
   make sure to use the generated `.xplor` format for the `psf` file.
+
+* Currently the `xplor`-formatted *parameter files* (not `psf` files) are not supported 
+  (e.g. multiple parameters per heading).
 
 * Remove water molecules from the `psf` file before conversion. The tests for water topology
   conversion do not quite pass yet (see below). You can use `editconf` and `genbox` to add
