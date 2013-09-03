@@ -86,6 +86,9 @@ You can add `-v` for debug information.
 * For the CHARMM parameter files, the `NBFIX` and `HBOND` sections are
   ignored.
 
+* Currently the `xplor`-formatted *parameter files* are not supported (e.g. multiple 
+  parameters per heading).
+
 * If you use [CHARMM-GUI](http://www.charmm-gui.org/?doc=input/membrane) to generate inputs,
   make sure to use the generated `.xplor` format for the `psf` file.
 
@@ -260,7 +263,7 @@ There are many ways you can help to improve **PyTopol**:
 
 ## ToDo 
 * More tests.
-* Multiple dihedral parameters per heading (in some `xplor`-formatted files).
+* `xplor`-formatted parameter files.
 * Create `posre.itp` file.
 * Setup test coverage, tox.ini and travis.yaml.
 
