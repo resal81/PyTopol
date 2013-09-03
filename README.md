@@ -35,6 +35,8 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
 ## Quickstart
 
+PyTopol requires Python 2.7.
+
 #### Method 1 - using `pip` (python package installer)
 
     $ pip install pytopol 
@@ -242,7 +244,7 @@ Water box + 4 ions (CHARMM 27, 3736 atoms)
 *  For cholestrol, why the difference in vdw energies isn't zero?
 *  For water box, why the difference in bonding energies isn't zero?
 *  For GluCl, why the difference in electrostatic energies rather big? Is
-   it due to a bug in PyTopol or because of numerical-errors piling up?
+   it due to a bug in PyTopol or because of accumulation of numerical-errors?
 
 
 ## Contribution
