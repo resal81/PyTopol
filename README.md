@@ -232,7 +232,7 @@ Water box + 4 ions (CHARMM 27, 3736 atoms)
           coul     -11830.1     -11830.0         0.0       -0.0
            vdw       1096.2       1096.2        -0.0        0.0
  
-51 - GluCl+Memb in vacuum (CHARMM 36, 64247 atoms)
+GluCl + Memb in vacuum (CHARMM 36, 64247 atoms)
 
     51                 NAMD      GROMACS        Diff      %Diff
           bond       9512.4       9511.1        -1.3       -0.0
