@@ -89,7 +89,12 @@ You can add `-v` for debug information.
 
 * Remove water molecules from the `psf` file before conversion. The tests for water topology
   conversion do not quite pass yet (see below). You can use `editconf` and `genbox` to add
-  water to the system later on in GROMACS.
+  water to the system later on in GROMACS. This is rather involved:
+  * Make sure to add the appropriate `itp` files for the water and ions to the `top.top` file.
+  * You need to add `#define _FF_CHARMM` to the beginning of the topology file if you're using
+    `charmm27.ff` water models. 
+  * Also add the necessary atom types (for the chosen water model and ions) at the end of 
+   `[atomtypes]` in the `top.top` file.
 
 
 
@@ -237,6 +242,7 @@ There are many ways you can help to improve **PyTopol**:
 ## ToDo 
 * Why the absolute difference in bonding energies of water box is rather big?
 * More tests.
+* Create `posre.itp` file.
 * Setup test coverage, tox.ini and travis.yaml.
 
 ## Acknowledgement 

@@ -53,7 +53,7 @@ setup(
     include_package_data=True,
     install_requires=[
     ],
-    license='MIT',
+    license='GPLv3',
     zip_safe=False,
     keywords='pytopol',
     scripts=['scripts/psf2top.py'],
