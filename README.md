@@ -238,10 +238,10 @@ Water box + 4 ions (CHARMM 27, 3736 atoms)
            vdw     -18005.8     -18002.0         3.8       -0.0
 
 
-#### Questions about the test results to be answered
-*  Why is the absolute difference in the vdw energies for cholestrol not zero?
-*  Why is the absolute difference in bonding energies of water box not zero?
-*  Why is the absolute difference in electrostatic energies for GluCl rather big? Is
+#### Questions about the test results
+*  For cholestrol, why the difference in vdw energies not zero?
+*  For water box, why the difference in bonding energies not zero?
+*  For GluCl, why the difference in electrostatic energies rather big? Is
    it due to a bug in PyTopol or because of numerical-errors piling up?
 
 
