@@ -227,6 +227,15 @@ Water box + 4 ions (CHARMM 27, 3736 atoms)
           coul     -11830.1     -11830.0         0.0       -0.0
            vdw       1096.2       1096.2        -0.0        0.0
  
+51 - GluCl+Memb in vacuum (CHARMM 36, 64247 atoms)
+
+    51                 NAMD      GROMACS        Diff      %Diff
+          bond       9512.4       9511.1        -1.3       -0.0
+         angle      37401.2      37398.4        -2.8       -0.0
+      dihedral      31675.7      31672.4        -3.3       -0.0
+      improper       1042.8       1042.8         0.0        0.0
+          coul     -41557.4     -41530.6        26.8       -0.1
+           vdw     -18005.8     -18002.0         3.8       -0.0
 
 ## Contribution
 There are many ways you can help to improve **PyTopol**:

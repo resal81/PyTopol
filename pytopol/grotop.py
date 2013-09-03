@@ -27,7 +27,7 @@ class SystemToGroTop(object):
 
     formats = {
         'atomtypes'    : '{:<7s} {:3d} {:>7.4f}   {:4.1f}   {:3s}     {:14.12f}     {:10.7f}  \n',
-        'atoms'        : '{:6d} {:>10s} {:6d} {:6s} {:6s} {:6d} {:10.3f} {:10.3f} \n',
+        'atoms'        : '{:6d} {:>10s} {:6d} {:6s} {:6s} {:6d} {:11.4f} {:11.4f} \n',
         'bondtypes'    : '{:5s}  {:5s}  {:1d}  {:6.4f}  {:6.1f}\n',
         'bonds'        : '{:3d}  {:3d}   {:1d}\n',
         'pairtypes'    : '{:6s} {:6s}   {:d}    {:14.12f}     {:14.12f}    \n',

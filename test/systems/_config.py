@@ -86,7 +86,7 @@ systems = {
                 'par/par_all36_lipid.prm',
                ],
         'info': 'POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)',
-        'skip': True,
+        'skip': False,
     },
     '22': {
         'psf':'membrane/dopc_autopsf.psf',
@@ -95,7 +95,7 @@ systems = {
                 'par/par_all36_lipid.prm',
                ],
         'info': 'DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)',
-        'skip': True,
+        'skip': False,
     },
     '31': {
         'psf':'protein/1lyz_nowat_autopsf.psf',
@@ -137,6 +137,15 @@ systems = {
         'pars':['par/par_all27_prot_lipid.prm',
                ],
         'info': 'Water box + 4 ions (CHARMM 27, 3736 atoms)',
+        'skip': False,
+    },
+    '51': {
+        'psf':'glucl/glucl_autopsf.psf',
+        'pdb':'glucl/glucl_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'GluCl + POPC memb in vacuum (CHARMM 36, 64247 atoms)',
         'skip': False,
     },
 }
