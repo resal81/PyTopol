@@ -73,7 +73,10 @@ You can add `-v` for debug information.
 * `psf2top.py` only accepts `NAMD` formatted `psf` files, where the columns in the
   atoms section of the `psf` file are separated by at least one space. If this
   is the case for your `psf` file, make sure there is a `NAMD` keyword in the
-  first line of the `psf` file.
+  first line of the `psf` file. For more information see 
+  [here](http://www.ks.uiuc.edu/Training/Tutorials/namd/namd-tutorial-unix-html/node21.html) 
+  and 
+  [here](http://www.ks.uiuc.edu/Training/Tutorials/namd/namd-tutorial-unix-html/node21.html).
 
 * You should provide all of CHARMM parameter files for the atoms in your `psf`
   file. These correspond to the parameter files that you use for your system
