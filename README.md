@@ -260,6 +260,7 @@ There are many ways you can help to improve **PyTopol**:
 
 ## ToDo 
 * More tests.
+* Multiple dihedral parameters per heading (in some `xplor`-formatted files).
 * Create `posre.itp` file.
 * Setup test coverage, tox.ini and travis.yaml.
 
