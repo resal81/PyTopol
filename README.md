@@ -70,7 +70,7 @@ You can add `-v` for debug information.
  `top.top` plus one or more `itp` files. Each segment in the `psf` file is converted 
  to one `itp` file. 
 
-* `psf2top.py` only accepts `NAMD` formatted `psf` files, where the columns in the
+* `psf2top.py` only accepts `xplor` formatted `psf` files, where the columns in the
   atoms section of the `psf` file are separated by at least one space. If this
   is the case for your `psf` file, make sure there is a `NAMD` keyword in the
   first line of the `psf` file. For more information see 
@@ -266,7 +266,9 @@ There are many ways you can help to improve **PyTopol**:
 
 ## ToDo 
 * More tests.
-* `xplor`-formatted parameter files.
+* Support `CHARMM`-formatted `psf` files.
+* For `xplor`-formatted `psf` files, should we check for duplicate dihedrals?
+* Support `xplor`-formatted parameter files.
 * Create `posre.itp` file.
 * Setup test coverage, tox.ini and travis.yaml.
 
