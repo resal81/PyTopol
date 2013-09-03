@@ -2,8 +2,9 @@
 
 ## Tests
 
-The `_config.py` includes the configuration of the tests. In particular, edit the paths
-to NAMD, GROMACS and `psf2top.py`.
+The `_config.py` includes the configuration for the tests. In particular, edit the paths
+for NAMD, GROMACS and `psf2top.py`.
+
 
 Then you can run the tests by:
 
