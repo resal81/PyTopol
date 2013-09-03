@@ -237,6 +237,14 @@ Water box + 4 ions (CHARMM 27, 3736 atoms)
           coul     -41557.4     -41530.6        26.8       -0.1
            vdw     -18005.8     -18002.0         3.8       -0.0
 
+
+#### Questions about the test results to be answered
+*  Why is the absolute difference in the vdw energies for cholestrol not zero?
+*  Why is the absolute difference in bonding energies of water box not zero?
+*  Why is the absolute difference in electrostatic energies for GluCl rather big? Is
+   it due to a bug in PyTopol or because of numerical-errors piling up?
+
+
 ## Contribution
 There are many ways you can help to improve **PyTopol**:
 
@@ -249,7 +257,6 @@ There are many ways you can help to improve **PyTopol**:
 
 
 ## ToDo 
-* Why the absolute difference in bonding energies of water box is rather big?
 * More tests.
 * Create `posre.itp` file.
 * Setup test coverage, tox.ini and travis.yaml.
