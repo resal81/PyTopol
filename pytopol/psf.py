@@ -3,7 +3,7 @@ This module provides tools for working with PSF files.
 
 """
 
-from pytopol.utils import build_res_chain
+from pytopol.utils import build_res_chain, build_pairs
 from pytopol.pdb import PDBSystem
 from pytopol import blocks
 
@@ -141,7 +141,7 @@ class PSFSystem(object):
                 psffmt = self._find_psf_format(line)
                 break
 
-        # check if the format is valid 
+        # check if the format is valid
         if psffmt is False:
             # assume the format is 'NAMD'
             psffmt = 'NAMD'
@@ -179,6 +179,7 @@ class PSFSystem(object):
 
         # build chain and residues
         build_res_chain(mol)
+        build_pairs(mol)
 
         t2 = time.time()
         self.lgr.debug("parsing took %4.1f seconds" % (t2-t1))
@@ -210,7 +211,7 @@ class PSFSystem(object):
 
 
         # counter for different elements in the psf file
-        _NA= _B = _A = _D = _I = _C = 0
+        _NA= _B = _A = _D = _I = _C = _NP = 0
         molecules = []
 
 
@@ -266,7 +267,14 @@ class PSFSystem(object):
                     m.cmaps.append(c)
                     _C += 1
 
+            for p in temp_mol.pairs:
+                if _AC_map[b.atom1] == chainname and _AC_map[b.atom2] == chainname:
+
+                    m.pairs.append(p)
+                    _NP += 1
+
             build_res_chain(m)
+            build_pairs(m)
             m.renumber_atoms()
             molecules.append(m)
 
@@ -277,6 +285,7 @@ class PSFSystem(object):
         assert len(temp_mol.dihedrals) == _D
         assert len(temp_mol.impropers) == _I
         assert len(temp_mol.cmaps)     == _C
+        assert len(temp_mol.pairs)     == _NP
 
         return molecules
 

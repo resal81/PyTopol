@@ -15,7 +15,7 @@ systems = {
         'pdb':'peptide/p1_A_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'A in vacuum',
-        'skip':False,
+        'skip':True,
     },
     '02': {
         'psf':'peptide/p2_AD_autopsf.psf',
@@ -147,7 +147,7 @@ systems = {
                 'par/par_all36_lipid.prm',
                ],
         'info': 'GluCl + POPC memb in vacuum (CHARMM 36, 64247 atoms)',
-        'skip': False,
+        'skip': True,
     },
 }
 

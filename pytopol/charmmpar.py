@@ -42,6 +42,7 @@ class CharmmPar(object):
         self.dihedralpars = ParType(sym=True, mult=True,  name='dihedral'  )
         self.improperpars = ParType(sym=True, mult=False, name='improper'  )
         self.nonbonding   = ParType(sym=False,mult=False, name='nonbonding')
+        self.nbfix        = ParType(sym=True, mult=False, name='nbfix')
         self.cmappars     = ParType(sym=False,mult=False, name='cmap')
 
         for p in args:
@@ -74,6 +75,7 @@ class CharmmPar(object):
           'IMPH':   {'nfields':(7,10,13),'nheader':4, 'cont':self.improperpars},
           'NONB':   {'nfields':(4,7),    'nheader':1, 'cont':self.nonbonding  },
           'NBON':   {'nfields':(4,7),    'nheader':1, 'cont':self.nonbonding  },
+          'NBFI':   {'nfields':(4,),     'nheader':2, 'cont':self.nbfix       },
          }
 
         # check if the file exists
@@ -142,6 +144,11 @@ class CharmmPar(object):
                 else:
                     raise ValueError(line)
 
+            elif _curr_par in ('NBFI',):
+                if len(f) == 4:
+                    at1, at2, epsilon, rmin = f
+                    main_parts[_curr_par]['cont'].add_parameter((at1,at2), (float(epsilon),float(rmin)))
+
             else:
                 raise NotImplementedError
 
@@ -205,7 +212,7 @@ class CharmmPar(object):
             elif line.startswith('cutnb'):
                 pass
 
-            elif line.startswith(('NBFIX', 'HBOND' )):
+            elif line.startswith(( 'HBOND', )):
                 _curr_par = None
 
             elif line.startswith('CMAP'):
@@ -391,6 +398,30 @@ class CharmmPar(object):
                 assert len(p[0]) == 24*24, '%d != %d' % (len(p[0]), 24*24)
                 p2 = [m*4.184 for m in p[0]]
                 cmap.param.coeffs = tuple(p2)
+
+            # -- pairs --
+            for pair in mol.pairs:
+                at1 = pair.atom1.get_atomtype()
+                at2 = pair.atom2.get_atomtype()
+
+                p = self.nbfix.get_parameter((at1, at2))
+
+                if len(p) == 0:
+                    continue  #
+
+                if len(p) != 1:
+                    msg = "for pair %s-%s, %d parameters found (expecting 1, found %s)" % (at1, at2, len(p), p)
+                    if not panic_on_missing_param:
+                        self.lgr.error(msg)
+                        continue
+                    else:
+                        raise ValueError(msg)
+
+                assert len(p[0]) == 2
+                eps, rmin = p[0]
+                eps = abs(eps) * 4.184
+                rmin = ljl * 0.1 / (2**(1.0/6.0))   # no *2
+                pair.param.coeffs = (eps, rmin)
 
 
 

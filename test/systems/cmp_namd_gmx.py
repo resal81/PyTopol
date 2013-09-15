@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
-
-import os, sys, subprocess, shutil
+from __future__ import print_function
+import os,  subprocess, shutil
 import _config as config
 
 def run_command(command, logfile='runlog.log'):
@@ -314,6 +314,35 @@ def main():
             print(s)
 
         print(' ')
+
+    for k in systems:
+        if config.systems[k]['skip'] == True:
+            continue
+
+        print(('%s - %s' % (k, config.systems[k]['info'])))
+
+    print(' ')
+    print('%6s  %13s %13s %13s %13s %13s %13s ' % ('','bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'))
+
+    for k in systems:
+        if config.systems[k]['skip'] == True:
+            continue
+        s = '%6s  ' % k
+        for m in ('bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'):
+            namd = config.systems[k]['namd_result'][m]
+            gromacs = config.systems[k]['gromacs_result'][m]
+
+            diff =  gromacs - namd
+
+            if (abs(gromacs - namd) < 0.01):
+                diffp = '0.000'
+            elif abs(namd) <= 0.001:
+                diffp = 'NA'
+            else:
+                diffp = '%5.3f' % (((gromacs-namd)/namd) * 100.0)
+            s += '%4.1f (%6s)  ' % (diff, diffp)
+
+        print(s)
 
 
 if __name__ == '__main__':

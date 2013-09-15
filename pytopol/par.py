@@ -68,6 +68,12 @@ class ParType(object):
 
             self.data = { atype : [ (epsilon, Rmin/2, eps14 or None, Rmin14 or None) ] }
 
+        - nbfix
+                !               Emin        Rmin
+                !            (kcal/mol)     (A)
+
+            self.data = {(atype1, atype2) : [ (epsilon, Rmin)]}
+
     '''
 
 
@@ -76,7 +82,7 @@ class ParType(object):
         self.symmetric_keys         = sym
         self.multiple_value_per_key = mult
 
-        assert name in ['bond', 'angle', 'dihedral', 'improper', 'nonbonding', 'cmap']
+        assert name in ['bond', 'angle', 'dihedral', 'improper', 'nonbonding', 'cmap', 'nbfix']
         self.name = name
 
         self._data = defaultdict(list)      # (atype1, atype2) : [(coeffs)]

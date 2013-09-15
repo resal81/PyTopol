@@ -12,6 +12,7 @@ class Molecule(object):
         self.dihedrals = []
         self.impropers = []
         self.cmaps     = []
+        self.pairs     = []
 
         self.forcefield= ''
         self._anumb_to_atom = {}
@@ -127,8 +128,8 @@ class Param(object):
     """
 
     def __init__(self, kind):
+        assert kind in ('bond', 'angle', 'dihedral', 'improper', 'cmap' , 'pair')
         self.kind   = kind
-        assert kind in ('bond', 'angle', 'dihedral', 'improper', 'cmap' )
         self.coeffs = tuple()
 
 
@@ -197,4 +198,14 @@ class CMap(object):
 
     def __init__(self):
         self.param = Param('cmap')
+
+class Pair(object):
+    """
+        atom1   = Atom,
+        atom2   = Atom,
+        param   = Param
+    """
+
+    def __init__(self):
+        self.param = Param('pair')
 

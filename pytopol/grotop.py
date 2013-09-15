@@ -102,6 +102,7 @@ class SystemToGroTop(object):
             _temp_mol.dihedrals += m.dihedrals
             _temp_mol.impropers += m.impropers
             _temp_mol.cmaps    += m.cmaps
+            _temp_mol.pairs    += m.pairs
 
         _temp_mol.forcefield = self.system.molecules[0].forcefield
 
@@ -204,9 +205,9 @@ class SystemToGroTop(object):
     def _make_pairtypes(self,m):
         _added = {}
         result = []
-        for dih in m.dihedrals:
-            atom1 = dih.atom1
-            atom4 = dih.atom4
+        for pr in m.pairs:
+            atom1 = pr.atom1
+            atom4 = pr.atom2
 
             at1 = atom1.get_atomtype()
             at4 = atom4.get_atomtype()
@@ -215,7 +216,11 @@ class SystemToGroTop(object):
                 mix_e = lambda x, y: (x*y)**0.5
                 mix_l = lambda x, y: (x+y)* 0.5
 
-                if   hasattr(atom1, 'lje14') and hasattr(atom4, 'ljl14'):
+                if pr.param.coeffs != tuple([]):
+                    e14 = pr.param.coeffs[0]
+                    l14 = pr.param.coeffs[1]
+
+                elif   hasattr(atom1, 'lje14') and hasattr(atom4, 'ljl14'):
                     e14 = mix_e(atom1.lje14, atom4.lje14)
                     l14 = mix_l(atom1.ljl14, atom4.ljl14)
 
@@ -418,33 +423,33 @@ class SystemToGroTop(object):
         return result
 
     def _make_pairs(self,m):
-        _bonds = []
-        for bond in m.bonds:
-            _bonds.append((bond.atom1.number, bond.atom2.number))
+        # _bonds = []
+        # for bond in m.bonds:
+        #     _bonds.append((bond.atom1.number, bond.atom2.number))
 
-        _angles = []
-        for ang in m.angles:
-            _angles.append((ang.atom1.number, ang.atom3.number))
+        # _angles = []
+        # for ang in m.angles:
+        #     _angles.append((ang.atom1.number, ang.atom3.number))
 
-        _bonds = set(_bonds)
-        _angles = set(_angles)
+        # _bonds = set(_bonds)
+        # _angles = set(_angles)
 
-        _pairs = []
+        # _pairs = []
 
         result = []
-        for dih in m.dihedrals:
+        for pr in m.pairs:
             fu = self.functions[m.forcefield]['pairs']
-            p1 = dih.atom1.number
-            p4 = dih.atom4.number
+            p1 = pr.atom1.number
+            p4 = pr.atom2.number
 
-            if (p1,p4) in _bonds or (p1,p4) in _angles or \
-               (p4,p1) in _bonds or (p4,p1) in _angles:
-                continue
+            # if (p1,p4) in _bonds or (p1,p4) in _angles or \
+            #    (p4,p1) in _bonds or (p4,p1) in _angles:
+            #     continue
 
-            if (p1,p4) in _pairs or (p4,p1) in _pairs:
-                continue
+            # if (p1,p4) in _pairs or (p4,p1) in _pairs:
+            #     continue
 
-            _pairs.append((p1,p4))
+            # _pairs.append((p1,p4))
 
             line = self.formats['pairs'].format(p1, p4, fu)
             result.append(line)
