@@ -43,6 +43,7 @@ class SystemToGroTop(object):
 
     toptemplate = ""
     toptemplate += "[ atomtypes ]    \n*ATOMTYPES*    \n"
+    toptemplate += "[ nonbond_params ]\n *NONBOND_PARAM* \n"
     toptemplate += "[ pairtypes ]    \n*PAIRTYPES*    \n"
     toptemplate += "[ bondtypes ]    \n*BONDTYPES*    \n"
     toptemplate += "[ angletypes ]   \n*ANGLETYPES*   \n"
@@ -121,6 +122,7 @@ class SystemToGroTop(object):
         self.lgr.debug("making atom/pair/bond/angle/dihedral/improper types")
         top += self.toptemplate
         top = top.replace('*ATOMTYPES*',     ''.join( self._make_atomtypes(_temp_mol)) )
+        top = top.replace('*NONBOND_PARAM*', ''.join( self._make_nonbond_param(_temp_mol)) )
         top = top.replace('*PAIRTYPES*',     ''.join( self._make_pairtypes(_temp_mol)) )
         top = top.replace('*BONDTYPES*',     ''.join( self._make_bondtypes(_temp_mol)) )
         top = top.replace('*ANGLETYPES*',    ''.join( self._make_angletypes(_temp_mol)))
@@ -201,6 +203,39 @@ class SystemToGroTop(object):
 
         return result
 
+    def _make_nonbond_param(self, m):
+        _added = {}
+        result = []
+        for pr in m.pairs:
+            atom1 = pr.atom1
+            atom4 = pr.atom2
+
+            at1 = atom1.get_atomtype()
+            at4 = atom4.get_atomtype()
+
+            if m.forcefield == 'charmm':
+                if pr.param.coeffs != tuple([]):
+                    print('nonbond_param: found previously provided pair param')
+                    e14 = pr.param.coeffs[0]
+                    l14 = pr.param.coeffs[1]
+                else:
+                    continue
+            else:
+                raise NotImplementedError
+
+            key = [at1,at4]
+            key.sort()
+            key = tuple(key)
+            if key in list(_added.keys()):
+                assert _added[key] == (e14, l14)
+                continue
+
+            _added[key] = (e14, l14)
+            fu = self.functions[m.forcefield]['pairs']
+            line = self.formats['pairtypes'].format(at1, at4, fu, l14, e14)
+            result.append(line)
+
+        return result
 
     def _make_pairtypes(self,m):
         _added = {}
@@ -217,6 +252,7 @@ class SystemToGroTop(object):
                 mix_l = lambda x, y: (x+y)* 0.5
 
                 if pr.param.coeffs != tuple([]):
+                    print('found previously provided pair param')
                     e14 = pr.param.coeffs[0]
                     l14 = pr.param.coeffs[1]
 

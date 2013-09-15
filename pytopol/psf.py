@@ -274,7 +274,7 @@ class PSFSystem(object):
                     _NP += 1
 
             build_res_chain(m)
-            build_pairs(m)
+            #build_pairs(m)
             m.renumber_atoms()
             molecules.append(m)
 

@@ -22,7 +22,7 @@ systems = {
         'pdb':'peptide/p2_AD_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'AD in vacuum',
-        'skip':False,
+        'skip':True,
     },
     '03': {
         'psf':'peptide/p3_ADL_autopsf.psf',
