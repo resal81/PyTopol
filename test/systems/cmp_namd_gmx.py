@@ -133,10 +133,18 @@ def parse_gromacs_output():
     for i, line in enumerate(lines):
         line = line.strip()
         if line.startswith('Step') and lines[i+1].strip().startswith('0'):
-            energy_lines = lines[i+4: i+10]
-            if lines[i+11].strip() != '':
-                print('warning: the gromacs energies are in more than 6 lines.')
-            break
+            if lines[i+3].strip().startswith('Energies'):
+                energy_lines = lines[i+4: i+10]
+                if lines[i+11].strip() != '':
+                    print('warning: the gromacs energies are in more than 6 lines.')
+                break
+            elif lines[i+4].strip().startswith('Energies'):
+                energy_lines = lines[i+5: i+11]
+                if lines[i+11].strip() != '':
+                    print('warning: the gromacs energies are in more than 6 lines.')
+                break
+            else:
+                raise RuntimeError("could not parse gromacs log")
 
     if energy_lines != []:
         for i, line in enumerate(energy_lines):
@@ -215,7 +223,7 @@ def main():
     print(' ')
 
     for k in systems:
-        
+
 
         if os.path.exists(k):
             shutil.rmtree(k)
@@ -295,7 +303,7 @@ def main():
             gromacs = config.systems[k]['gromacs_result'][m]
 
             diff =  gromacs - namd
-            
+
             if (abs(gromacs - namd) < 0.01):
                 diffp = '0.0'
             elif abs(namd) <= 0.001:

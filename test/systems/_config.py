@@ -2,7 +2,8 @@
 
 
 paths = {
-    'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
+    #'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
+    'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
     'namd'   : '/Users/Reza/Workspace/Programs/namd/2.9',
     'psf2top': '/Users/Reza/Devel/pytopol/scripts/psf2top.py',
 }
@@ -14,14 +15,14 @@ systems = {
         'pdb':'peptide/p1_A_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'A in vacuum',
-        'skip':True,
+        'skip':False,
     },
     '02': {
         'psf':'peptide/p2_AD_autopsf.psf',
         'pdb':'peptide/p2_AD_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'AD in vacuum',
-        'skip':True,
+        'skip':False,
     },
     '03': {
         'psf':'peptide/p3_ADL_autopsf.psf',
@@ -86,7 +87,7 @@ systems = {
                 'par/par_all36_lipid.prm',
                ],
         'info': 'POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)',
-        'skip': False,
+        'skip': True,
     },
     '22': {
         'psf':'membrane/dopc_autopsf.psf',
@@ -95,14 +96,14 @@ systems = {
                 'par/par_all36_lipid.prm',
                ],
         'info': 'DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)',
-        'skip': False,
+        'skip': True,
     },
     '31': {
         'psf':'protein/1lyz_nowat_autopsf.psf',
         'pdb':'protein/1lyz_nowat_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': '1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)',
-        'skip': False,
+        'skip': True,
     },
     '41': {
         'psf':'ligand/chol_nowat_autopsf.psf',
@@ -129,7 +130,7 @@ systems = {
         'pars':['par/par_all27_prot_lipid.prm',
                ],
         'info': '10 water molecule (CHARMM 27, 30 atoms)',
-        'skip': False,
+        'skip': True,
     },
     '44': {
         'psf':'other/wat_autopsf.psf',
@@ -137,7 +138,7 @@ systems = {
         'pars':['par/par_all27_prot_lipid.prm',
                ],
         'info': 'Water box + 4 ions (CHARMM 27, 3736 atoms)',
-        'skip': False,
+        'skip': True,
     },
     '51': {
         'psf':'glucl/glucl_autopsf.psf',
