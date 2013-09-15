@@ -425,24 +425,7 @@ class CharmmPar(object):
                 rmin = ljl * 0.1 / (2**(1.0/6.0))   # no *2
                 pair.param.coeffs = (eps, rmin)
 
-                # A = eps
-                # B = rmin
 
-
-                # A14=-A;
-                # A=pow(B14,12.);
-                # A=A*4.*A14;
-                # A14=A;
-
-                # sqrt26=pow(2.,(1./6.));
-                # B14=B/sqrt26;
-                # B=pow(B14,6.);
-                # B=B*4.*A14;
-                # B14=B;
-
-                # A14 *= 4.184
-                # B14 *= 0.1
-                # pair.param.coeffs = (A14, B14)
 
 
 

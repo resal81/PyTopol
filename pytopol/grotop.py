@@ -251,12 +251,12 @@ class SystemToGroTop(object):
                 mix_e = lambda x, y: (x*y)**0.5
                 mix_l = lambda x, y: (x+y)* 0.5
 
-                if pr.param.coeffs != tuple([]):
-                    print('found previously provided pair param')
-                    e14 = pr.param.coeffs[0]
-                    l14 = pr.param.coeffs[1]
+                # if pr.param.coeffs != tuple([]):
+                #     print('found previously provided pair param')
+                #     e14 = pr.param.coeffs[0]
+                #     l14 = pr.param.coeffs[1]
 
-                elif   hasattr(atom1, 'lje14') and hasattr(atom4, 'ljl14'):
+                if   hasattr(atom1, 'lje14') and hasattr(atom4, 'ljl14'):
                     e14 = mix_e(atom1.lje14, atom4.lje14)
                     l14 = mix_l(atom1.ljl14, atom4.ljl14)
 
