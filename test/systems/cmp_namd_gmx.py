@@ -371,12 +371,12 @@ def summarize_test_outputs(systems):
             diff =  gromacs - namd
 
             if namd == 0:
-                diffp = '0.00'
+                diffp = '0.000'
             else:
                 diffp = abs(  ((gromacs-namd)/namd) * 100.0  )
-                diffp =  '%5.2f' % (diffp)
+                diffp =  '%5.3f' % (diffp)
 
-            result = '%10s   %10.2f   %10.2f   %9.2f  %9s' % (m, namd, gromacs, diff, diffp)
+            result = '%10s   %10.2f   %10.2f   %9.4f  %9s' % (m, namd, gromacs, diff, diffp)
             print(result)
 
         print(' ')

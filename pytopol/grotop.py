@@ -174,37 +174,54 @@ class SystemToGroTop(object):
             mix_e = lambda x, y: (x*y)**0.5
             mix_l = lambda x, y: (x+y)* 0.5
 
+
+        inter_at_types = {(h.atype1, h.atype2):h for h in m.interactiontypes}
+        inter_keys = list(inter_at_types.keys())
+
         result = []
         for i in range(len(m.atomtypes)):
+            m.atomtypes[i].convert('gromacs')
+
             for j in range(i, len(m.atomtypes)):
-                m.atomtypes[i].convert('gromacs')
                 m.atomtypes[j].convert('gromacs')
 
-                i_lje14 = m.atomtypes[i].gromacs['param']['lje14']
-                j_lje14 = m.atomtypes[j].gromacs['param']['lje14']
-                i_ljl14 = m.atomtypes[i].gromacs['param']['ljl14']
-                j_ljl14 = m.atomtypes[j].gromacs['param']['ljl14']
+                at1 = m.atomtypes[i].atype
+                at2 = m.atomtypes[j].atype
 
-                if i_lje14 and j_lje14:
-                    e14 = mix_e(i_lje14, j_lje14)
-                    l14 = mix_l(i_ljl14, j_ljl14)
-                elif i_lje14:
-                    j_lje = m.atomtypes[j].gromacs['param']['lje']
-                    j_ljl = m.atomtypes[j].gromacs['param']['ljl']
-                    e14 = mix_e(i_lje14, j_lje)
-                    l14 = mix_l(i_ljl14, j_ljl)
-                elif j_lje14:
-                    i_lje = m.atomtypes[i].gromacs['param']['lje']
-                    i_ljl = m.atomtypes[i].gromacs['param']['ljl']
-                    e14 = mix_e(i_lje, j_lje14)
-                    l14 = mix_l(i_ljl, j_ljl14)
+                if (at1, at2) in inter_keys:
+                    inter_at_types[(at1,at2)].convert('gromacs')
+                    e14 = inter_at_types[(at1,at2)].gromacs['param']['lje']
+                    l14 = inter_at_types[(at1,at2)].gromacs['param']['ljl']
+                elif (at2, at1) in inter_keys:
+                    inter_at_types[(at2,at1)].convert('gromacs')
+                    e14 = inter_at_types[(at2,at1)]['param']['lje']
+                    l14 = inter_at_types[(at2,at1)]['param']['ljl']
                 else:
-                    continue
-            fu = 1 # TODO
-            at1 = m.atomtypes[i].atype
-            at2 = m.atomtypes[j].atype
-            line = self.formats['pairtypes'].format(at1, at2, fu, l14, e14)
-            result.append(line)
+                    i_lje14 = m.atomtypes[i].gromacs['param']['lje14']
+                    j_lje14 = m.atomtypes[j].gromacs['param']['lje14']
+                    i_ljl14 = m.atomtypes[i].gromacs['param']['ljl14']
+                    j_ljl14 = m.atomtypes[j].gromacs['param']['ljl14']
+
+                    if i_lje14 and j_lje14:
+                        e14 = mix_e(i_lje14, j_lje14)
+                        l14 = mix_l(i_ljl14, j_ljl14)
+                    elif i_lje14:
+                        j_lje = m.atomtypes[j].gromacs['param']['lje']
+                        j_ljl = m.atomtypes[j].gromacs['param']['ljl']
+                        e14 = mix_e(i_lje14, j_lje)
+                        l14 = mix_l(i_ljl14, j_ljl)
+                    elif j_lje14:
+                        i_lje = m.atomtypes[i].gromacs['param']['lje']
+                        i_ljl = m.atomtypes[i].gromacs['param']['ljl']
+                        e14 = mix_e(i_lje, j_lje14)
+                        l14 = mix_l(i_ljl, j_ljl14)
+                    else:
+                        continue
+
+                fu = 1 # TODO
+
+                line = self.formats['pairtypes'].format(at1, at2, fu, l14, e14)
+                result.append(line)
 
         return result
 
@@ -306,7 +323,7 @@ class SystemToGroTop(object):
                     line += '\\\n'
                 else:
                     line += ' '
-                line += '%0.8f' % c
+                line += '%12.8f' % c
 
             line += '\n\n'
             result.append(line)

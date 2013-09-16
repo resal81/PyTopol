@@ -171,8 +171,8 @@ systems = {
     # proteins
 
     '201': {
-        'psf':'protein/1lyz_nowat_autopsf.psf',
-        'pdb':'protein/1lyz_nowat_autopsf.pdb',
+        'psf':'protein/lyz_autopsf.psf',
+        'pdb':'protein/lyz_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': '1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)',
         'name': 'Lysozyme',

@@ -269,7 +269,7 @@ class CharmmPar(object):
                     continue
 
                 added_atomtypes.append(at)
-                p = self.nonbonding.get_parameter(atom.atomtype)
+                p = self.nonbonding.get_parameter(at)
 
                 if len(p) != 1:
                     msg = "for atom type %s, %d parameters found (expecting 1, found: %s)" % (at, len(p), p)

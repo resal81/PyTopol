@@ -262,7 +262,7 @@ class Param:
         elif isinstance(self, InteractionType):
             if reqformat == 'gromacs' and self.format == 'charmm':
                 self.gromacs['param']['lje'] = abs(self.charmm['param']['lje']) * 4.184
-                self.gromacs['param']['ljl'] = self.charmm['param']['ljl'] * 0.1 / (2**(1.0/6.0))  # no *2
+                self.gromacs['param']['ljl'] = self.charmm['param']['ljl'] * 0.1 /  (2**(1.0/6.0))   # no *2
 
                 if self.charmm['param']['lje14'] is not None:
                     self.gromacs['param']['lje14'] = abs(self.charmm['param']['lje14']) * 4.184
