@@ -177,8 +177,9 @@ Notes:
 *  `Diff` is the absolute difference (i.e. `gromacs-namd`) and `%Diff` is
    `(gromacs-namd)/namd * 100`.
 
-    -----------------------------------------------------------
-    002 - AD in vacuum
+
+002 - AD in vacuum
+
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond        79.78        79.78     -0.0001      0.000
          angle        39.94        39.94      0.0001      0.000
@@ -187,8 +188,9 @@ Notes:
           coul        -0.61        -0.61      0.0000      0.001
            vdw        21.39        21.39     -0.0000      0.000
 
-    -----------------------------------------------------------
-    101 - POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
+
+101 - POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
+
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond       134.20       134.20     -0.0013      0.001
          angle      1611.89      1611.88     -0.0071      0.000
@@ -197,8 +199,9 @@ Notes:
           coul     -2377.17     -2377.13      0.0464      0.002
            vdw     -2663.91     -2663.91     -0.0036      0.000
 
-    -----------------------------------------------------------
-    102 - DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)
+
+102 - DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)
+
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond       143.88       143.88     -0.0007      0.001
          angle      1591.22      1591.21     -0.0127      0.001
@@ -207,8 +210,9 @@ Notes:
           coul     -2254.60     -2254.59      0.0092      0.000
            vdw     -2896.05     -2896.05      0.0032      0.000
 
-    -----------------------------------------------------------
-    201 - 1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)
+
+201 - 1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)
+
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond       120.03       120.03     -0.0003      0.000
          angle       354.94       354.94      0.0008      0.000
@@ -217,8 +221,9 @@ Notes:
           coul     -3995.40     -3995.41     -0.0134      0.000
            vdw      -568.16      -568.16     -0.0015      0.000
 
-    -----------------------------------------------------------
-    301 - Cholesterol in vacuum (CHARMM 36, 74 atoms)
+
+301 - Cholesterol in vacuum (CHARMM 36, 74 atoms)
+
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond         7.93         7.93     -0.0000      0.000
          angle        58.62        58.62      0.0000      0.000
@@ -227,7 +232,6 @@ Notes:
           coul       -57.90       -57.90     -0.0001      0.000
            vdw         4.99         4.99     -0.0000      0.000
 
-    -----------------------------------------------------------
 
 
 
