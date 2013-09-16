@@ -1,8 +1,7 @@
 
 
-from pytopol.psf import PSFSystem
 from pytopol import blocks
-import os, logging
+import logging
 
 
 module_logger = logging.getLogger('mainapp.grotop')
@@ -42,8 +41,8 @@ class SystemToGroTop(object):
 
 
     toptemplate = ""
-    toptemplate += "[ atomtypes ]    \n*ATOMTYPES*    \n"
-    toptemplate += "[ nonbond_params ]\n *NONBOND_PARAM* \n"
+    toptemplate += "[ atomtypes ]      \n*ATOMTYPES*    \n"
+    toptemplate += "[ nonbond_params ] \n*NONBOND_PARAM* \n"
     toptemplate += "[ pairtypes ]    \n*PAIRTYPES*    \n"
     toptemplate += "[ bondtypes ]    \n*BONDTYPES*    \n"
     toptemplate += "[ angletypes ]   \n*ANGLETYPES*   \n"
@@ -208,31 +207,31 @@ class SystemToGroTop(object):
         result = []
         for pr in m.pairs:
             atom1 = pr.atom1
-            atom4 = pr.atom2
+            atom2 = pr.atom2
 
             at1 = atom1.get_atomtype()
-            at4 = atom4.get_atomtype()
+            at2 = atom2.get_atomtype()
 
             if m.forcefield == 'charmm':
                 if pr.param.coeffs != tuple([]):
                     print('nonbond_param: found previously provided pair param')
-                    e14 = pr.param.coeffs[0]
-                    l14 = pr.param.coeffs[1]
+                    eps = pr.param.coeffs[0]
+                    sig = pr.param.coeffs[1]
                 else:
                     continue
             else:
                 raise NotImplementedError
 
-            key = [at1,at4]
+            key = [at1,at2]
             key.sort()
             key = tuple(key)
             if key in list(_added.keys()):
-                assert _added[key] == (e14, l14)
+                assert _added[key] == (eps, sig)
                 continue
 
-            _added[key] = (e14, l14)
+            _added[key] = (eps, sig)
             fu = self.functions[m.forcefield]['pairs']
-            line = self.formats['pairtypes'].format(at1, at4, fu, l14, e14)
+            line = self.formats['pairtypes'].format(at1, at2, fu, sig, eps)
             result.append(line)
 
         return result
@@ -446,7 +445,7 @@ class SystemToGroTop(object):
 
     def _make_atoms(self,m):
         result = []
-        i = 1
+        #i = 1
         for atom in m.atoms:
             numb = cgnr = atom.number
             atype = atom.get_atomtype()
@@ -459,33 +458,12 @@ class SystemToGroTop(object):
         return result
 
     def _make_pairs(self,m):
-        # _bonds = []
-        # for bond in m.bonds:
-        #     _bonds.append((bond.atom1.number, bond.atom2.number))
-
-        # _angles = []
-        # for ang in m.angles:
-        #     _angles.append((ang.atom1.number, ang.atom3.number))
-
-        # _bonds = set(_bonds)
-        # _angles = set(_angles)
-
-        # _pairs = []
 
         result = []
         for pr in m.pairs:
             fu = self.functions[m.forcefield]['pairs']
             p1 = pr.atom1.number
             p4 = pr.atom2.number
-
-            # if (p1,p4) in _bonds or (p1,p4) in _angles or \
-            #    (p4,p1) in _bonds or (p4,p1) in _angles:
-            #     continue
-
-            # if (p1,p4) in _pairs or (p4,p1) in _pairs:
-            #     continue
-
-            # _pairs.append((p1,p4))
 
             line = self.formats['pairs'].format(p1, p4, fu)
             result.append(line)

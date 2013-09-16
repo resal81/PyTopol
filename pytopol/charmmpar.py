@@ -29,6 +29,7 @@ class CharmmPar(object):
             improperpars: ParType, impropers
             nonbonding  : ParType, nonbonding
             cmappars    : ParType, cmaps
+            nbfix       : ParType, nbfix
 
         """
 
@@ -148,6 +149,8 @@ class CharmmPar(object):
                 if len(f) == 4:
                     at1, at2, epsilon, rmin = f
                     main_parts[_curr_par]['cont'].add_parameter((at1,at2), (float(epsilon),float(rmin)))
+                else:
+                    raise NotImplementedError
 
             else:
                 raise NotImplementedError
@@ -222,7 +225,8 @@ class CharmmPar(object):
                 _curr_par = line[:4]
 
             elif _curr_par is not None:
-                # normal line
+                # parsing normal line that has parameter data
+
                 if _curr_par == 'CMAP':
                     cm_lines.append(line)
                 else:
@@ -422,8 +426,23 @@ class CharmmPar(object):
                 assert len(p[0]) == 2
                 eps, rmin = p[0]
                 eps = abs(eps) * 4.184
-                rmin = ljl * 0.1 / (2**(1.0/6.0))   # no *2
+                rmin = rmin * 0.1 / (2**(1.0/6.0))   # no *2
                 pair.param.coeffs = (eps, rmin)
+
+            # for inter in list(self.nbfix._data.keys):
+            #     at1 = inter[0]
+            #     at2 = inter[1]
+            #     p = self.nbfix.get_parameter((at1, at2))
+            #     assert len(p) == 1
+
+            #     eps, rmin = p[0]
+            #     eps = abs(eps) * 4.184
+            #     rmin = rmin * 0.1 / (2**(1.0/6.0))   # no *2
+
+            #     m = blocks.
+            #     pair.param.coeffs = (eps, rmin)
+
+
 
 
 

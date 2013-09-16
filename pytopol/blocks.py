@@ -7,14 +7,16 @@ class Molecule(object):
         self.atoms     = []
         self.residues  = []
 
+        self.atomtypes = []
+
         self.bonds     = []
         self.angles    = []
         self.dihedrals = []
         self.impropers = []
         self.cmaps     = []
-        self.pairs     = []
+        self.londons   = []
 
-        self.forcefield= ''
+        self.forcefield=  None
         self._anumb_to_atom = {}
 
 
@@ -37,7 +39,7 @@ class Molecule(object):
             if anumb in self._anumb_to_atom:
                 return self._anumb_to_atom[anumb]
             else:
-                print("no such atom number (%d) in the molecule" % (numb))
+                print("no such atom number (%d) in the molecule" % (anumb))
                 return False
 
 
@@ -90,13 +92,9 @@ class Atom(object):
         bfactor = float,
         altlocs = list,
         atomtype= str,
-        charge  = float,
         radius  = float,
+        charge  = radius,
         mass    = float,
-        lje     = float,       # energy
-        ljl     = float,       # length
-        lje14   = float,
-        ljl14   = float,
         chain   = str,
         resname = str,
         resnumb = int,
@@ -111,6 +109,7 @@ class Atom(object):
 
 
 
+
     def get_atomtype(self):
         if hasattr(self, 'atomtype'):
             return self.atomtype
@@ -120,92 +119,191 @@ class Atom(object):
 
 
 
-
-class Param(object):
-    """
-        kind    = str,
-        coeffs  = tuple,
-    """
-
-    def __init__(self, kind):
-        assert kind in ('bond', 'angle', 'dihedral', 'improper', 'cmap' , 'pair')
-        self.kind   = kind
-        self.coeffs = tuple()
-
-
-
-class Bond(object):
-    """
-        atom1   = Atom,
-        atom2   = Atom,
-        order   = int,     # if a bond is single/double or triple
-        function= str,
-        param   = Param
-    """
-
+class Bond:
     def __init__(self):
-        self.param = Param('bond')
+        self.atom1 = None
+        self.atom2 = None
 
-
-class Angle(object):
-    """
-        atom1   = Atom,
-        atom2   = Atom,
-        atom3   = Atom,
-        param   = Param
-    """
-
+class Angle:
     def __init__(self):
-        self.param = Param('angle')
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
 
-class Dihedral(object):
-    """
-        atom1   = Atom,
-        atom2   = Atom,
-        atom3   = Atom,
-        atom4   = Atom,
-        param   = Param,       # shouldn't be used for charmm
-        charmm_param = list,   # for charmm dihedrals with several multiplicities
-    """
-
+class Dihedral:
     def __init__(self):
-        self.param = Param('dihedral')
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
+        self.atom4 = None
 
-class Improper(object):
-    """
-        atom1   = Atom,
-        atom2   = Atom,
-        atom3   = Atom,
-        atom4   = Atom,
-        param   = Param
-    """
-
+class Improper:
     def __init__(self):
-        self.param = Param('improper')
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
+        self.atom4 = None
 
-class CMap(object):
-    """
-        atom1   = Atom,
-        atom2   = Atom,
-        atom3   = Atom,
-        atom4   = Atom,
-        atom5   = Atom,
-        atom6   = Atom,
-        atom7   = Atom,
-        atom8   = Atom,
-        param   = Param
-    """
-
+class CMap:
     def __init__(self):
-        self.param = Param('cmap')
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
+        self.atom4 = None
+        self.atom5 = None
+        self.atom6 = None
+        self.atom7 = None
+        self.atom8 = None
 
-class Pair(object):
-    """
-        atom1   = Atom,
-        atom2   = Atom,
-        param   = Param
-    """
 
-    def __init__(self):
-        self.param = Param('pair')
+
+class Param:
+    def convert(self, reqformat):
+        assert reqformat in ('charmm', 'gromacs')
+
+        if reqformat == self.format:
+            if reqformat == 'charmm':
+                return self.charmm
+            elif reqformat == 'gromacs':
+                return self.gromacs
+            else:
+                raise NotImplementedError
+
+        if isinstance(self, AtomType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        elif isinstance(self, BondType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        elif isinstance(self, AngleType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        elif isinstance(self, DihedralType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        elif isinstance(self, ImproperType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        elif isinstance(self, CMapType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        elif isinstance(self, InteractionType):
+            if reqformat == 'gromacs' and self.format == 'charmm':
+                pass
+            else:
+                raise NotImplementedError
+
+        else:
+            raise NotImplementedError
+
+
+class AtomType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+        self.atype  = None
+        self.mass   = None
+
+        self.charmm = {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
+        self.gromacs= {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
+
+
+class BondType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+        self.atype1 = None
+        self.atype2 = None
+
+        self.charmm = {'param': {} }
+        self.gromacs= {'param': {}, 'func':None}
+
+
+class AngleType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+
+        self.atype1 = None
+        self.atype2 = None
+        self.atype3 = None
+
+        self.charmm = {}
+        self.gromacs= {}
+
+
+class DihedralType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+
+        self.atype1 = None
+        self.atype2 = None
+        self.atype3 = None
+        self.atype4 = None
+
+        self.charmm = {}
+        self.gromacs= {}
+
+
+class ImproperType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+
+        self.atype1 = None
+        self.atype2 = None
+        self.atype3 = None
+        self.atype4 = None
+
+        self.charmm = {}
+        self.gromacs= {}
+
+
+class CMapType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+
+        self.atype1 = None
+        self.atype2 = None
+        self.atype3 = None
+        self.atype4 = None
+        self.atype5 = None
+        self.atype6 = None
+        self.atype7 = None
+        self.atype8 = None
+
+        self.charmm = {}
+        self.gromacs= {}
+
+
+class InteractionType(Param):
+    def __init__(self, format):
+        assert format in ('charmm', 'gromacs')
+        self.format = format
+
+        self.atype1 = None
+        self.atype2 = None
+
+        self.charmm = {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
+        self.gromacs= {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
 

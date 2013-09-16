@@ -61,14 +61,12 @@ class PSFSystem(object):
 
             # break psf segments to one molecule
             if each_chain_is_molecule:
-                sepmols = self._process_psf(mol)
+                sepmols = self._split_psf(mol)
                 if sepmols:
                     self.molecules = tuple(sepmols)
-                    self.lgr.debug(
-                       "%d molecules were generated from the psf file" % len(sepmols))
+                    self.lgr.debug("%d molecules were generated from the psf file" % len(sepmols))
                 else:
-                    self.lgr.warning(
-                        "could not convert psf segments to molecules")
+                    self.lgr.warning("could not convert psf segments to molecules")
             else:
                 self.molecules = tuple([mol])
 
@@ -179,7 +177,7 @@ class PSFSystem(object):
 
         # build chain and residues
         build_res_chain(mol)
-        build_pairs(mol)
+        build_londons(mol)
 
         t2 = time.time()
         self.lgr.debug("parsing took %4.1f seconds" % (t2-t1))
@@ -188,7 +186,7 @@ class PSFSystem(object):
 
 
 
-    def _process_psf(self, temp_mol):
+    def _split_psf(self, temp_mol):
         """Convert a psf Molecule to multiple Molecules.
 
         Using this function only makes sense if the segments in the PSF file
@@ -274,7 +272,6 @@ class PSFSystem(object):
                     _NP += 1
 
             build_res_chain(m)
-            #build_pairs(m)
             m.renumber_atoms()
             molecules.append(m)
 
@@ -350,6 +347,10 @@ class PSFSystem(object):
             a.mass      = float(mass)
 
             m.atoms.append(a)
+
+            if attype not in m.atomtypes:
+                m.atomtypes.append(attype)
+
             return True
 
         else:
