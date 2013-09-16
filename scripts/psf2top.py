@@ -94,17 +94,20 @@ def main():
 
     # read the PSF file
     psffile = args.p
-    psfsys = psf.PSFSystem(psffile, pdbfile=None, each_chain_is_molecule=True)
+    psfsys = psf.PSFSystem(psffile)
+    psfsys.split_psf()
     if len(psfsys.molecules) == 0:
         lgr.error("could not build PSF system - see above")
         return
+
 
     # read all the parameter files
     prmfiles = args.c
     par = charmmpar.CharmmPar(*prmfiles)
 
+
     # add parameters to the system
-    par.add_params_to_system(psfsys, panic_on_missing_param=True, forcefield='charmm')
+    par.add_params_to_system(psfsys, panic_on_missing_param=True)
 
     # convert system to gromacs format
     grotop.SystemToGroTop(psfsys)

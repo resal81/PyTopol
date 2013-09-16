@@ -11,6 +11,8 @@ class System(object):
         self.impropertypes    = []
         self.cmaptypes        = []
         self.interactiontypes = []
+        self.forcefield=  None
+
 
 
 class Molecule(object):
@@ -25,8 +27,8 @@ class Molecule(object):
         self.dihedrals = []
         self.impropers = []
         self.cmaps     = []
+        self.pairs     = []
 
-        self.forcefield=  None
         self._anumb_to_atom = {}
 
 
@@ -165,6 +167,11 @@ class CMap:
         self.atom7 = None
         self.atom8 = None
 
+class Pair:
+    def __init__(self):
+        self.atom1 = None
+        self.atom2 = None
+
 
 
 class Param:
@@ -189,6 +196,9 @@ class Param:
                 if self.charmm['param']['lje14'] is not None:
                     self.gromacs['param']['lje14'] = abs(self.charmm['param']['lje14']) * 4.184
                     self.gromacs['param']['ljl14'] = self.charmm['param']['ljl14'] * 2 * 0.1 / (2**(1.0/6.0))
+                else:
+                    self.gromacs['param']['lje14'] = None
+                    self.gromacs['param']['ljl14'] = None
             else:
                 raise NotImplementedError
 
@@ -234,6 +244,7 @@ class Param:
             if reqformat == 'gromacs' and self.format == 'charmm':
                 self.gromacs['param']['kpsi'] = self.charmm['param']['kpsi'] * 2 * 4.184
                 self.gromacs['param']['psi0'] = self.charmm['param']['psi0']
+                self.gromacs['func'] = 2
             else:
                 raise NotImplementedError
 
@@ -256,6 +267,9 @@ class Param:
                 if self.charmm['param']['lje14'] is not None:
                     self.gromacs['param']['lje14'] = abs(self.charmm['param']['lje14']) * 4.184
                     self.gromacs['param']['ljl14'] = self.charmm['param']['ljl14'] * 0.1 / (2**(1.0/6.0))
+                else:
+                    self.gromacs['param']['lje14'] = None
+                    self.gromacs['param']['ljl14'] = None
             else:
                 raise NotImplementedError
 
@@ -269,6 +283,7 @@ class AtomType(Param):
         self.format = format
         self.atype  = None
         self.mass   = None
+        self.charge = None
 
         self.charmm = {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
         self.gromacs= {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
@@ -295,7 +310,7 @@ class AngleType(Param):
         self.atype3 = None
 
         self.charmm = {'param':{'ktetha':None, 'tetha0':None, 'kub':None, 's0':None} }
-        self.gromacs= {}
+        self.gromacs= {'param':{}}
 
 
 class DihedralType(Param):
@@ -323,7 +338,7 @@ class ImproperType(Param):
         self.atype4 = None
 
         self.charmm = {'param': {'kpsi': None, 'psi0':None} }
-        self.gromacs= {}
+        self.gromacs= {'param':{}, 'func':None}
 
 
 class CMapType(Param):
@@ -341,7 +356,7 @@ class CMapType(Param):
         self.atype8 = None
 
         self.charmm = {'param': []}
-        self.gromacs= {}
+        self.gromacs= {'param': []}
 
 
 class InteractionType(Param):

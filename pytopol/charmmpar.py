@@ -256,9 +256,9 @@ class CharmmPar(object):
         added_impropertypes = []
         added_cmaptypes = []
 
-        for mi, mol in enumerate(system.molecules):
-            mol.forcefield = 'charmm'
+        system.forcefield = 'charmm'
 
+        for mi, mol in enumerate(system.molecules):
 
             for atom in mol.atoms:
                 at = atom.get_atomtype()
@@ -284,6 +284,8 @@ class CharmmPar(object):
 
                 newat = blocks.AtomType('charmm')
                 newat.atype = at
+                newat.mass  = atom.mass
+                newat.charge= atom.charge
                 newat.charmm['param']['lje'] = lje
                 newat.charmm['param']['ljl'] = ljl
                 newat.charmm['param']['lje14'] = lje14
@@ -495,12 +497,12 @@ class CharmmPar(object):
                 assert len(p[0]) == 2
                 eps, rmin = p[0]
                 newnb = blocks.InteractionType('charmm')
-                newbt.atype1 = at1
-                newbt.atype2 = at2
-                newbt.charmm['param']['lje'] = eps
-                newbt.charmm['param']['ljl'] = rmin
+                newnb.atype1 = at1
+                newnb.atype2 = at2
+                newnb.charmm['param']['lje'] = eps
+                newnb.charmm['param']['ljl'] = rmin
 
-                system.interactiontypes.append(newbt)
+                system.interactiontypes.append(newnb)
 
 if __name__ == '__main__':
     import sys

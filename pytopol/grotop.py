@@ -1,8 +1,6 @@
 
 
-from pytopol import blocks
 import logging
-
 
 module_logger = logging.getLogger('mainapp.grotop')
 
@@ -12,17 +10,6 @@ class GroTop:
 
 
 class SystemToGroTop(object):
-
-    functions = {
-        'charmm':{
-             'bonds':      1,
-             'angles':     5,
-             'dihedrals':  9,
-             'impropers':  2,
-             'pairs':      1,
-             'cmaps':      1,
-        },
-    }
 
     formats = {
         'atomtypes'    : '{:<7s} {:3d} {:>7.4f}   {:4.1f}   {:3s}     {:14.12f}     {:10.7f}  \n',
@@ -87,47 +74,22 @@ class SystemToGroTop(object):
 
         self.lgr.debug("starting to assemble topology...")
 
-        # check that we support the forcefield
-        for m in self.system.molecules:
-            assert m.forcefield in list(self.functions.keys())
-
-
-        self.lgr.debug("generating a temporary molecule to create forcefield types...")
-        _temp_mol = blocks.Molecule()
-
-        for m in self.system.molecules:
-            _temp_mol.atoms += m.atoms
-            _temp_mol.bonds += m.bonds
-            _temp_mol.angles += m.angles
-            _temp_mol.dihedrals += m.dihedrals
-            _temp_mol.impropers += m.impropers
-            _temp_mol.cmaps    += m.cmaps
-            _temp_mol.pairs    += m.pairs
-
-        _temp_mol.forcefield = self.system.molecules[0].forcefield
-
-        if redefine_atom_types:
-            self.lgr.debug("redefining the atom types")
-            self._redefine_atomtypes(_temp_mol)
-
-        self.lgr.debug("number of atoms in the '_temp_mol' is %d" % len(_temp_mol.atoms))
-
         top = '[ defaults ] ; \n'
         top += ';nbfunc    comb-rule    gen-pairs    fudgeLJ    fudgeQQ \n'
 
-        if self.system.molecules[0].forcefield == 'charmm':
+        if self.system.forcefield == 'charmm':
             top += '1          2           yes          1.0       1.0 \n'
 
         self.lgr.debug("making atom/pair/bond/angle/dihedral/improper types")
         top += self.toptemplate
-        top = top.replace('*ATOMTYPES*',     ''.join( self._make_atomtypes(_temp_mol)) )
-        top = top.replace('*NONBOND_PARAM*', ''.join( self._make_nonbond_param(_temp_mol)) )
-        top = top.replace('*PAIRTYPES*',     ''.join( self._make_pairtypes(_temp_mol)) )
-        top = top.replace('*BONDTYPES*',     ''.join( self._make_bondtypes(_temp_mol)) )
-        top = top.replace('*ANGLETYPES*',    ''.join( self._make_angletypes(_temp_mol)))
-        top = top.replace('*DIHEDRALTYPES*', ''.join( self._make_dihedraltypes(_temp_mol)) )
-        top = top.replace('*IMPROPERTYPES*', ''.join( self._make_impropertypes(_temp_mol)) )
-        top = top.replace('*CMAPTYPES*',     ''.join( self._make_cmaptypes(_temp_mol)) )
+        top = top.replace('*ATOMTYPES*',     ''.join( self._make_atomtypes(self.system)) )
+        top = top.replace('*NONBOND_PARAM*', ''.join( self._make_nonbond_param(self.system)) )
+        top = top.replace('*PAIRTYPES*',     ''.join( self._make_pairtypes(self.system)) )
+        top = top.replace('*BONDTYPES*',     ''.join( self._make_bondtypes(self.system)) )
+        top = top.replace('*ANGLETYPES*',    ''.join( self._make_angletypes(self.system)))
+        top = top.replace('*DIHEDRALTYPES*', ''.join( self._make_dihedraltypes(self.system)) )
+        top = top.replace('*IMPROPERTYPES*', ''.join( self._make_impropertypes(self.system)) )
+        top = top.replace('*CMAPTYPES*',     ''.join( self._make_cmaptypes(self.system)) )
 
         for i, m in enumerate(self.system.molecules):
             molname = 'mol_%02d' % (i+1)
@@ -145,9 +107,6 @@ class SystemToGroTop(object):
             f.writelines([top])
 
         self.lgr.debug('writing top finished')
-
-
-        # --------------
 
 
         self.lgr.debug("generating atom/pair/bond/angle/dihedral/improper for the itp files")
@@ -182,133 +141,85 @@ class SystemToGroTop(object):
             else:
                 return 0
 
-
-        _added = {}
         result = []
-        for atom in m.atoms:
-            at = atom.get_atomtype()
-            if at in list(_added.keys()):
-                assert _added[at] == (atom.mass, atom.lje, atom.ljl), '%s: %s != %s' % (at,
-                        _added[at], (atom.mass, atom.lje, atom.ljl))
-                continue
-
-            # not checking atom.charge => it can be different for the same atom type
-            _added[at] = (atom.mass, atom.lje, atom.ljl)
-
-            prot = get_prot(at)
-            line = self.formats['atomtypes'].format(
-                    at, prot, atom.mass, atom.charge, 'A', atom.ljl, atom.lje)
+        for at in m.atomtypes:
+            at.convert('gromacs')
+            prot = get_prot(at.atype)
+            ljl  = at.gromacs['param']['ljl']
+            lje  = at.gromacs['param']['lje']
+            line = self.formats['atomtypes'].format(at.atype, prot, at.mass, at.charge, 'A', ljl, lje)
             result.append(line)
 
         return result
 
     def _make_nonbond_param(self, m):
-        _added = {}
         result = []
-        for pr in m.pairs:
-            atom1 = pr.atom1
-            atom2 = pr.atom2
+        for pr in m.interactiontypes:
+            at1 = pr.atype1
+            at2 = pr.atype2
 
-            at1 = atom1.get_atomtype()
-            at2 = atom2.get_atomtype()
+            pr.convert('gromacs')
+            eps = pr.gromacs['param']['lje']
+            sig = pr.gromacs['param']['ljl']
 
-            if m.forcefield == 'charmm':
-                if pr.param.coeffs != tuple([]):
-                    print('nonbond_param: found previously provided pair param')
-                    eps = pr.param.coeffs[0]
-                    sig = pr.param.coeffs[1]
-                else:
-                    continue
-            else:
-                raise NotImplementedError
-
-            key = [at1,at2]
-            key.sort()
-            key = tuple(key)
-            if key in list(_added.keys()):
-                assert _added[key] == (eps, sig)
-                continue
-
-            _added[key] = (eps, sig)
-            fu = self.functions[m.forcefield]['pairs']
+            fu = 1  # TODO
             line = self.formats['pairtypes'].format(at1, at2, fu, sig, eps)
             result.append(line)
 
         return result
 
     def _make_pairtypes(self,m):
-        _added = {}
+
+        if m.forcefield == 'charmm':
+            mix_e = lambda x, y: (x*y)**0.5
+            mix_l = lambda x, y: (x+y)* 0.5
+
         result = []
-        for pr in m.pairs:
-            atom1 = pr.atom1
-            atom4 = pr.atom2
+        for i in range(len(m.atomtypes)):
+            for j in range(i, len(m.atomtypes)):
+                m.atomtypes[i].convert('gromacs')
+                m.atomtypes[j].convert('gromacs')
 
-            at1 = atom1.get_atomtype()
-            at4 = atom4.get_atomtype()
+                i_lje14 = m.atomtypes[i].gromacs['param']['lje14']
+                j_lje14 = m.atomtypes[j].gromacs['param']['lje14']
+                i_ljl14 = m.atomtypes[i].gromacs['param']['ljl14']
+                j_ljl14 = m.atomtypes[j].gromacs['param']['ljl14']
 
-            if m.forcefield == 'charmm':
-                mix_e = lambda x, y: (x*y)**0.5
-                mix_l = lambda x, y: (x+y)* 0.5
-
-                # if pr.param.coeffs != tuple([]):
-                #     print('found previously provided pair param')
-                #     e14 = pr.param.coeffs[0]
-                #     l14 = pr.param.coeffs[1]
-
-                if   hasattr(atom1, 'lje14') and hasattr(atom4, 'ljl14'):
-                    e14 = mix_e(atom1.lje14, atom4.lje14)
-                    l14 = mix_l(atom1.ljl14, atom4.ljl14)
-
-                elif hasattr(atom1, 'lje14'):
-                    e14 = mix_e(atom1.lje14, atom4.lje)
-                    l14 = mix_l(atom1.ljl14, atom4.ljl)
-
-                elif hasattr(atom4, 'lje14'):
-                    e14 = mix_e(atom1.lje, atom4.lje14)
-                    l14 = mix_l(atom1.ljl, atom4.ljl14)
-
+                if i_lje14 and j_lje14:
+                    e14 = mix_e(i_lje14, j_lje14)
+                    l14 = mix_l(i_ljl14, j_ljl14)
+                elif i_lje14:
+                    j_lje = m.atomtypes[j].gromacs['param']['lje']
+                    j_ljl = m.atomtypes[j].gromacs['param']['ljl']
+                    e14 = mix_e(i_lje14, j_lje)
+                    l14 = mix_l(i_ljl14, j_ljl)
+                elif j_lje14:
+                    i_lje = m.atomtypes[i].gromacs['param']['lje']
+                    i_ljl = m.atomtypes[i].gromacs['param']['ljl']
+                    e14 = mix_e(i_lje, j_lje14)
+                    l14 = mix_l(i_ljl, j_ljl14)
                 else:
                     continue
-            else:
-                raise NotImplementedError
-
-            key = [at1,at4]
-            key.sort()
-            key = tuple(key)
-            if key in list(_added.keys()):
-                assert _added[key] == (e14, l14)
-                continue
-
-            _added[key] = (e14, l14)
-            fu = self.functions[m.forcefield]['pairs']
-            line = self.formats['pairtypes'].format(at1, at4, fu, l14, e14)
+            fu = 1 # TODO
+            at1 = m.atomtypes[i].atype
+            at2 = m.atomtypes[j].atype
+            line = self.formats['pairtypes'].format(at1, at2, fu, l14, e14)
             result.append(line)
 
         return result
 
 
     def _make_bondtypes(self,m):
-        _added = {}
         result = []
-        for bond in m.bonds:
-            at1 = bond.atom1.get_atomtype()
-            at2 = bond.atom2.get_atomtype()
+        for bond in m.bondtypes:
+            at1 = bond.atype1
+            at2 = bond.atype2
+            bond.convert('gromacs')
 
-            key = [at1, at2]
-            key.sort()
-            key = tuple(key)
+            kb = bond.gromacs['param']['kb']
+            b0 = bond.gromacs['param']['b0']
+            fu = bond.gromacs['func']
 
-            if m.forcefield == 'charmm':
-                kb, b0 =  bond.param.coeffs
-
-            if key in list(_added.keys()):
-                assert _added[key] == (kb,b0)
-                continue
-
-            _added[key] = (kb, b0)
-            _added[key[::-1]] = (kb, b0)
-
-            fu = self.functions[m.forcefield]['bonds']
             line = self.formats['bondtypes'].format(at1, at2, fu, b0, kb)
             result.append(line)
 
@@ -316,117 +227,81 @@ class SystemToGroTop(object):
 
 
     def _make_angletypes(self,m):
-        _added = {}
         result = []
-        for ang in m.angles:
-            at1 = ang.atom1.get_atomtype()
-            at2 = ang.atom2.get_atomtype()
-            at3 = ang.atom3.get_atomtype()
+        for ang in m.angletypes:
+            at1 = ang.atype1
+            at2 = ang.atype2
+            at3 = ang.atype3
+            ang.convert('gromacs')
 
-            key = [at1, at2, at3]
-            #key.sort()
-            key = tuple(key)
+            ktetha = ang.gromacs['param']['ktetha']
+            tetha0 = ang.gromacs['param']['tetha0']
+            kub    = ang.gromacs['param']['kub']
+            s0     = ang.gromacs['param']['s0']
 
-            if m.forcefield == 'charmm':
-                ktetha, tetha0, kub, s0 = ang.param.coeffs
+            fu = ang.gromacs['func']
 
-            if key in list(_added.keys()):
-                assert _added[key] == (ktetha, tetha0, kub, s0), '%s -> %s != %s' % (key, _added[key],
-                        (ktetha, tetha0, kub, s0))
-                continue
-
-            _added[key] = (ktetha, tetha0, kub, s0)
-            _added[key[::-1]] = (ktetha, tetha0, kub, s0)
-
-            fu = self.functions[m.forcefield]['angles']
             line = self.formats['angletypes'].format(at1, at2, at3, fu, tetha0, ktetha, s0, kub)
             result.append(line)
 
         return result
 
     def _make_dihedraltypes(self,m):
-        _added = {}
         result = []
-        for dih in m.dihedrals:
-            at1 = dih.atom1.get_atomtype()
-            at2 = dih.atom2.get_atomtype()
-            at3 = dih.atom3.get_atomtype()
-            at4 = dih.atom4.get_atomtype()
+        for dih in m.dihedraltypes:
+            at1 = dih.atype1
+            at2 = dih.atype2
+            at3 = dih.atype3
+            at4 = dih.atype4
 
-            key = [at1, at2, at3, at4]
-            #key.sort()
-            key = tuple(key)
+            dih.convert('gromacs')
+            fu = dih.gromacs['func']
 
-            if m.forcefield == 'charmm':
-                for coeff in dih.charmm_param:
-                    kchi, n, delta = coeff
+            for dpar in dih.gromacs['param']:
+                kchi = dpar['kchi']
+                n    = dpar['n']
+                delta= dpar['delta']
 
-                    if key not in list(_added.keys()):
-                        _added[key] = []
-                        _added[key[::-1]] = []
-
-                    if (kchi, n, delta) not in _added[key]:
-                        _added[key].append((kchi, n, delta))
-                        _added[key[::-1]].append((kchi, n, delta))
-                        fu = self.functions[m.forcefield]['dihedrals']
-                        line = self.formats['dihedraltypes'].format(
-                                at1, at2, at3, at4, fu, delta, kchi, n)
-                        result.append(line)
-                    else:
-                        continue
+                line = self.formats['dihedraltypes'].format(at1, at2, at3, at4, fu, delta, kchi, n)
+                result.append(line)
 
         return result
 
     def _make_impropertypes(self,m):
-        _added = {}
         result = []
-        for imp in m.impropers:
-            at1 = imp.atom1.get_atomtype()
-            at2 = imp.atom2.get_atomtype()
-            at3 = imp.atom3.get_atomtype()
-            at4 = imp.atom4.get_atomtype()
+        for imp in m.impropertypes:
+            at1 = imp.atype1
+            at2 = imp.atype2
+            at3 = imp.atype3
+            at4 = imp.atype4
+            imp.convert('gromacs')
 
-            key = [at1, at2, at3, at4]
-            #key.sort()
-            key = tuple(key)
+            kpsi = imp.gromacs['param']['kpsi']
+            psi0 = imp.gromacs['param']['psi0']
 
-            if m.forcefield == 'charmm':
-                kpsi, psi0 = imp.param.coeffs
-
-            if key in list(_added.keys()):
-                assert _added[key] == (kpsi, psi0)
-                continue
-
-            _added[key] = (kpsi, psi0)
-            _added[key[::-1]] = (kpsi, psi0)
-
-            fu = self.functions[m.forcefield]['impropers']
+            fu = imp.gromacs['func']
             line = self.formats['impropertypes'].format(at1, at2, at3, at4, fu, psi0, kpsi)
             result.append(line)
 
         return result
 
     def _make_cmaptypes(self, m):
-        _added = []
         result = []
-        for cmap in m.cmaps:
-            at1 = cmap.atom1.get_atomtype()
-            at2 = cmap.atom2.get_atomtype()
-            at3 = cmap.atom3.get_atomtype()
-            at4 = cmap.atom4.get_atomtype()
-            at5 = cmap.atom5.get_atomtype()
-            at6 = cmap.atom6.get_atomtype()
-            at7 = cmap.atom7.get_atomtype()
-            at8 = cmap.atom8.get_atomtype()
+        for cmap in m.cmaptypes:
+            at1 = cmap.atype1
+            at2 = cmap.atype2
+            at3 = cmap.atype3
+            at4 = cmap.atype4
+            at5 = cmap.atype5
+            at6 = cmap.atype6
+            at7 = cmap.atype7
+            at8 = cmap.atype8
 
-            key = (at1, at2, at3, at4, at5, at6, at7, at8)
-            if key in _added:
-                continue
-            _added.append(key)
+            cmap.convert('gromacs')
 
-            fu = self.functions[m.forcefield]['cmaps']
+            fu = cmap.gromacs['func']
             line = '%s %s %s %s %s %d 24 24' % (at1, at2, at3, at4, at8, fu)
-            for i,c in enumerate(cmap.param.coeffs):
+            for i,c in enumerate(cmap.gromacs['param']):
                 if i%10 == 0:
                     line += '\\\n'
                 else:
@@ -437,8 +312,6 @@ class SystemToGroTop(object):
             result.append(line)
 
         return result
-
-
 
     def _make_moleculetype(self,m, molname):
         return ['; Name \t\t  nrexcl \n %s    3 \n' % molname]
@@ -461,7 +334,7 @@ class SystemToGroTop(object):
 
         result = []
         for pr in m.pairs:
-            fu = self.functions[m.forcefield]['pairs']
+            fu = 1
             p1 = pr.atom1.number
             p4 = pr.atom2.number
 
@@ -475,7 +348,7 @@ class SystemToGroTop(object):
     def _make_bonds(self,m):
         result = []
         for bond in m.bonds:
-            fu = self.functions[m.forcefield]['bonds']
+            fu = 1
             line = self.formats['bonds'].format(bond.atom1.number, bond.atom2.number, fu)
             result.append(line)
 
@@ -485,7 +358,7 @@ class SystemToGroTop(object):
     def _make_angles(self,m):
         result = []
         for ang in m.angles:
-            fu = self.functions[m.forcefield]['angles']
+            fu = 5
             line = self.formats['angles'].format(ang.atom1.number, ang.atom2.number, ang.atom3.number, fu)
             result.append(line)
 
@@ -495,7 +368,7 @@ class SystemToGroTop(object):
     def _make_dihedrals(self,m):
         result = []
         for dih in m.dihedrals:
-            fu = self.functions[m.forcefield]['dihedrals']
+            fu = 9
             line = self.formats['dihedrals'].format(
                     dih.atom1.number, dih.atom2.number, dih.atom3.number, dih.atom4.number, fu)
             result.append(line)
@@ -506,7 +379,7 @@ class SystemToGroTop(object):
     def _make_impropers(self,m):
         result = []
         for imp in m.impropers:
-            fu = self.functions[m.forcefield]['impropers']
+            fu = 2
             line = self.formats['impropers'].format(
                     imp.atom1.number, imp.atom2.number, imp.atom3.number, imp.atom4.number, fu)
             result.append(line)
@@ -518,7 +391,7 @@ class SystemToGroTop(object):
         result = []
 
         for cmap in m.cmaps:
-            fu = self.functions[m.forcefield]['cmaps']
+            fu = 1
             line = '%5d %5d %5d %5d %5d   %d\n' % (
                 cmap.atom1.number, cmap.atom2.number, cmap.atom3.number, cmap.atom4.number,
                 cmap.atom8.number, fu)

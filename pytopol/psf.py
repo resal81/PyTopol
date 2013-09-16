@@ -3,7 +3,7 @@ This module provides tools for working with PSF files.
 
 """
 
-from pytopol.utils import build_res_chain
+from pytopol.utils import build_res_chain, build_pairs
 from pytopol.pdb import PDBSystem
 from pytopol import blocks
 
@@ -17,7 +17,7 @@ module_logger = logging.getLogger('mainapp.psf')
 
 
 class PSFSystem(blocks.System):
-    def __init__(self, psffile, pdbfile=None, each_chain_is_molecule=False):
+    def __init__(self, psffile):
         """ Initialization of a PSF file.
 
         Args:
@@ -25,14 +25,10 @@ class PSFSystem(blocks.System):
                 the path to the psf file
             pdbfile
                 optional, the path to the pdb file
-            each_chain_is_molecule
-                bool, if True, each segment in the PSF file will be converted
-                to one Molecule instance.
 
         Attributes:
             self.lgr        : logger.Logger
             self.psfile     : str, path to the psf file
-            self.pdbfile    : str, path to the pdb file
             self.molecules  : a tuple of Molecule instances
 
         """
@@ -40,33 +36,16 @@ class PSFSystem(blocks.System):
         self.lgr = logging.getLogger('mainapp.psf.PSFSystem')
         self.lgr.debug(">> entering PSFSystem")
 
+        super(PSFSystem, self).__init__()
+
         self.psffile = psffile
         self.molecules = tuple([])
 
         # parse the psf file and create one molecule
         mol = self._parse(self.psffile)
-
-        if mol:
-            self.lgr.debug("the psf molecule was parsed")
-
-            # add pdb file
-            if pdbfile:
-                self.pdbfile = pdbfile
-                self._add_pdbfile(pdbfile, mol)
-
-            # break psf segments to one molecule
-            if each_chain_is_molecule:
-                sepmols = self._split_psf(mol)
-                if sepmols:
-                    self.molecules = tuple(sepmols)
-                    self.lgr.debug("%d molecules were generated from the psf file" % len(sepmols))
-                else:
-                    self.lgr.warning("could not convert psf segments to molecules")
-            else:
-                self.molecules = tuple([mol])
+        self.molecules = tuple([mol])
 
         self.lgr.debug("<< leaving PSFSystem")
-
 
 
     def __repr__(self):
@@ -76,7 +55,7 @@ class PSFSystem(blocks.System):
 
 
 
-    def _add_pdbfile(self, pdbfile, mol):
+    def add_pdbfile(self, pdbfile, mol):
         """ add coordinates form a pdb file to the system."""
 
         pdb = PDBSystem(pdbfile, guess_mols=False)
@@ -172,6 +151,7 @@ class PSFSystem(blocks.System):
 
         # build chain and residues
         build_res_chain(mol)
+        build_pairs(mol)
 
         t2 = time.time()
         self.lgr.debug("parsing took %4.1f seconds" % (t2-t1))
@@ -180,7 +160,7 @@ class PSFSystem(blocks.System):
 
 
 
-    def _split_psf(self, temp_mol):
+    def split_psf(self):
         """Convert a psf Molecule to multiple Molecules.
 
         Using this function only makes sense if the segments in the PSF file
@@ -194,6 +174,9 @@ class PSFSystem(blocks.System):
 
         """
 
+        assert len(self.molecules) == 1
+        temp_mol = self.molecules[0]
+
         self.lgr.debug("converting psf to multiple molecules based on chains")
 
         unique_chains = set([chain.name for chain in temp_mol.chains])
@@ -203,7 +186,7 @@ class PSFSystem(blocks.System):
 
 
         # counter for different elements in the psf file
-        _NA= _B = _A = _D = _I = _C  = 0
+        _NA= _B = _A = _D = _I = _C  = _NP = 0
         molecules = []
 
 
@@ -259,6 +242,12 @@ class PSFSystem(blocks.System):
                     m.cmaps.append(c)
                     _C += 1
 
+            for p in temp_mol.pairs:
+                if _AC_map[b.atom1] == chainname and _AC_map[b.atom2] == chainname:
+
+                    m.pairs.append(p)
+                    _NP += 1
+
 
 
             build_res_chain(m)
@@ -272,6 +261,7 @@ class PSFSystem(blocks.System):
         assert len(temp_mol.dihedrals) == _D
         assert len(temp_mol.impropers) == _I
         assert len(temp_mol.cmaps)     == _C
+        assert len(temp_mol.pairs)     == _NP
 
         return molecules
 
