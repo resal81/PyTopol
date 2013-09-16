@@ -177,45 +177,58 @@ Notes:
 *  `Diff` is the absolute difference (i.e. `gromacs-namd`) and `%Diff` is
    `(gromacs-namd)/namd * 100`.
 
-POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
+    -----------------------------------------------------------
+    002 - AD in vacuum
+                       NAMD      GROMACS    GMX-NAMD   % |diff|
+          bond        79.78        79.78     -0.0001      0.000
+         angle        39.94        39.94      0.0001      0.000
+      dihedral         4.34         4.34     -0.0000      0.000
+      improper         0.06         0.06     -0.0000      0.069
+          coul        -0.61        -0.61      0.0000      0.001
+           vdw        21.39        21.39     -0.0000      0.000
 
-    21                 NAMD      GROMACS        Diff      %Diff
-          bond        134.2        134.2        -0.0        0.0
-         angle       1611.9       1611.9        -0.0        0.0
-      dihedral       3737.3       3737.3         0.0        0.0
-      improper         10.3         10.3        -0.0        0.0
-          coul      -2377.2      -2377.1         0.0       -0.0
-           vdw      -2663.9      -2663.9        -0.0        0.0
+    -----------------------------------------------------------
+    101 - POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
+                       NAMD      GROMACS    GMX-NAMD   % |diff|
+          bond       134.20       134.20     -0.0013      0.001
+         angle      1611.89      1611.88     -0.0071      0.000
+      dihedral      3737.28      3737.28      0.0045      0.000
+      improper        10.31        10.31     -0.0000      0.000
+          coul     -2377.17     -2377.13      0.0464      0.002
+           vdw     -2663.91     -2663.91     -0.0036      0.000
 
-DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)
+    -----------------------------------------------------------
+    102 - DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)
+                       NAMD      GROMACS    GMX-NAMD   % |diff|
+          bond       143.88       143.88     -0.0007      0.001
+         angle      1591.22      1591.21     -0.0127      0.001
+      dihedral      4376.74      4376.72     -0.0167      0.000
+      improper        11.69        11.69     -0.0000      0.000
+          coul     -2254.60     -2254.59      0.0092      0.000
+           vdw     -2896.05     -2896.05      0.0032      0.000
 
-    22                 NAMD      GROMACS        Diff      %Diff
-          bond        143.9        143.9        -0.0        0.0
-         angle       1591.2       1591.2        -0.0       -0.0
-      dihedral       4376.7       4376.7        -0.0       -0.0
-      improper         11.7         11.7        -0.0        0.0
-          coul      -2254.6      -2254.6         0.0        0.0
-           vdw      -2896.1      -2896.0         0.0        0.0
+    -----------------------------------------------------------
+    201 - 1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)
+                       NAMD      GROMACS    GMX-NAMD   % |diff|
+          bond       120.03       120.03     -0.0003      0.000
+         angle       354.94       354.94      0.0008      0.000
+      dihedral       338.70       338.68     -0.0187      0.006
+      improper        19.78        19.78      0.0001      0.000
+          coul     -3995.40     -3995.41     -0.0134      0.000
+           vdw      -568.16      -568.16     -0.0015      0.000
 
-1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)
+    -----------------------------------------------------------
+    301 - Cholesterol in vacuum (CHARMM 36, 74 atoms)
+                       NAMD      GROMACS    GMX-NAMD   % |diff|
+          bond         7.93         7.93     -0.0000      0.000
+         angle        58.62        58.62      0.0000      0.000
+      dihedral        22.93        22.93      0.0000      0.000
+      improper         0.00         0.00      0.0000      0.000
+          coul       -57.90       -57.90     -0.0001      0.000
+           vdw         4.99         4.99     -0.0000      0.000
 
-    31                 NAMD      GROMACS        Diff      %Diff
-          bond      11807.4      11807.3        -0.0       -0.0
-         angle       5946.3       5946.3        -0.0       -0.0
-      dihedral        781.8        781.9         0.1        0.0
-      improper        578.2        578.2         0.0        0.0
-          coul      -3221.8      -3221.8         0.0        0.0
-           vdw    1741437.8    1741435.9        -1.9       -0.0
+    -----------------------------------------------------------
 
-Cholesterol in vacuum (CHARMM 36, 74 atoms)
-
-    41                 NAMD      GROMACS        Diff      %Diff
-          bond          7.9          7.9        -0.0        0.0
-         angle         58.6         58.6         0.0        0.0
-      dihedral         22.9         22.9         0.0        0.0
-      improper          0.0          0.0         0.0        0.0
-          coul        -57.9        -57.9        -0.0        0.0
-           vdw          5.0          5.0         0.0        0.6
 
 
 

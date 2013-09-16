@@ -1,5 +1,8 @@
-
+import logging
 from pytopol import blocks
+
+lgr = logging.getLogger('mainapp.utils')
+
 
 def build_res_chain(m):
     # using a molecule object with atoms, builds residues and chains
@@ -33,7 +36,6 @@ def build_res_chain(m):
         r.chain = C
 
     m.chains = chains
-
 
 def build_pairs(m):
     # using a molecule with bonds, angles and dihedrals, build pairs
@@ -70,6 +72,9 @@ def build_pairs(m):
         thispair.atom2 = dih.atom4
 
         m.pairs.append(thispair)
+
+
+
 
 
 

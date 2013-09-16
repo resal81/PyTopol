@@ -1,6 +1,8 @@
 
 
-
+# ===================================================================
+# Paths for the programs
+# ===================================================================
 paths = {
     'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
     #'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
@@ -9,103 +11,180 @@ paths = {
 }
 
 
+# ===================================================================
+# For the systems:
+#   0x      -> peptides
+#   1x      -> lipids
+#   2x      -> proteins
+#   3x      -> small molecules
+#   4x      -> water
+#   5x      -> protein + ligand systems
+# ===================================================================
+
+# the system ids that tests should be skipped for
+skip_systems = [
+    '001', #'002',
+    '003', '004', '005', '006', '007', '008', '009', '010',
+
+    #'101', '102',
+
+    #'201',
+    #'301',
+
+    '401', '402', '403',
+
+    '501',
+]
+
 systems = {
-    '01': {
+
+    # peptides
+
+    '001': {
         'psf':'peptide/p1_A_autopsf.psf',
         'pdb':'peptide/p1_A_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'A in vacuum',
-        'skip':True,
+        'name': 'Alanine',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres': 1,
     },
-    '02': {
+    '002': {
         'psf':'peptide/p2_AD_autopsf.psf',
         'pdb':'peptide/p2_AD_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'AD in vacuum',
-        'skip':False,
+        'name': 'AD peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':2,
     },
-    '03': {
+    '003': {
         'psf':'peptide/p3_ADL_autopsf.psf',
         'pdb':'peptide/p3_ADL_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'ADL in vacuum',
-        'skip':True,
+        'name': 'ADL peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':3,
     },
-    '04': {
+    '004': {
         'psf':'peptide/p4_ADLK_autopsf.psf',
         'pdb':'peptide/p4_ADLK_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'ADLK in vacuum',
-        'skip':True,
+        'name': 'ADLK peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':4,
     },
-    '05': {
+    '005': {
         'psf':'peptide/p5_ADLKR_autopsf.psf',
         'pdb':'peptide/p5_ADLKR_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'ADLKR in vacuum',
-        'skip':True,
+        'name': 'ADLKR peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':5,
     },
-    '06': {
+    '006': {
         'psf':'peptide/p2_AR_autopsf.psf',
         'pdb':'peptide/p2_AR_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'AR in vacuum',
-        'skip':True,
+        'name': 'AR peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':2,
     },
-    '07': {
+    '007': {
         'psf':'peptide/p3_ARP_autopsf.psf',
         'pdb':'peptide/p3_ARP_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'ARP in vacuum',
-        'skip':True,
+        'name': 'ARP peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':3,
     },
-    '08': {
+    '008': {
         'psf':'peptide/p4_ARPA_autopsf.psf',
         'pdb':'peptide/p4_ARPA_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'ARPA in vacuum',
-        'skip':True,
+        'name': 'ARPA peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':4,
     },
-    '09': {
+    '009': {
         'psf':'peptide/p1_P_autopsf.psf',
         'pdb':'peptide/p1_P_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'P in vacuum',
-        'skip':True,
+        'name': 'Proline',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':1,
     },
-    '10': {
+    '010': {
         'psf':'peptide/p3_GPG_autopsf.psf',
         'pdb':'peptide/p3_GPG_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': 'GPG in vacuum',
-        'skip':True,
+        'name': 'GPG peptide',
+        'ff': 'CH27',
+        'natoms':  -1,
+        'nres':3,
     },
-    '21': {
+
+    # lipids
+
+    '101': {
         'psf':'membrane/popc_autopsf.psf',
         'pdb':'membrane/popc_autopsf.pdb',
         'pars':['par/par_all36_prot.prm',
                 'par/par_all36_lipid.prm',
                ],
         'info': 'POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)',
-        'skip': True,
+        'name': 'POPC memb',
+        'ff': 'CH36',
+        'natoms':  9916,
+        'nres':74,
     },
-    '22': {
+    '102': {
         'psf':'membrane/dopc_autopsf.psf',
         'pdb':'membrane/dopc_autopsf.pdb',
         'pars':['par/par_all36_prot.prm',
                 'par/par_all36_lipid.prm',
                ],
         'info': 'DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)',
-        'skip': True,
+        'name': 'DOPC memb',
+        'ff': 'CH36',
+        'natoms':  10488,
+        'nres':76,
     },
-    '31': {
-        'psf':'protein/1lyz_nowat_autopsf.psf',
-        'pdb':'protein/1lyz_nowat_autopsf.pdb',
+
+    # proteins
+
+    '201': {
+        'psf':'protein/lyz_autopsf.psf',
+        'pdb':'protein/lyz_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm'],
         'info': '1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)',
-        'skip': True,
+        'name': 'Lysozyme',
+        'ff': 'CH27',
+        'natoms':  1966,
+        'nres':129,
     },
-    '41': {
+
+
+    # small organic molecules
+
+    '301': {
         'psf':'ligand/chol_nowat_autopsf.psf',
         'pdb':'ligand/chol_nowat_autopsf.pdb',
         'pars':['par/par_all36_prot.prm',
@@ -114,44 +193,72 @@ systems = {
                 'par/par_chol.par',
                ],
         'info': 'Cholesterol in vacuum (CHARMM 36, 74 atoms)',
-        'skip': False,
+        'name': 'Cholesterol',
+        'ff': 'CH36',
+        'natoms':  74,
+        'nres':1,
     },
-    '42': {
+
+    # water
+
+
+    '401': {
         'psf':'other/onlywater_autopsf.psf',
         'pdb':'other/onlywater_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm',
                ],
         'info': 'Water box (CHARMM 27, 3732 atoms)',
-        'skip': True,
+        'name': 'water box',
+        'ff': 'CH27',
+        'natoms':  3732,
+        'nres':-1,
     },
-    '43': {
+    '402': {
         'psf':'other/wmol_autopsf.psf',
         'pdb':'other/wmol_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm',
                ],
         'info': '10 water molecule (CHARMM 27, 30 atoms)',
-        'skip': True,
+        'name': '10 wat',
+        'ff': 'CH27',
+        'natoms':  30,
+        'nres':10,
     },
-    '44': {
+    '403': {
         'psf':'other/wat_autopsf.psf',
         'pdb':'other/wat_autopsf.pdb',
         'pars':['par/par_all27_prot_lipid.prm',
                ],
-        'info': 'Water box + 4 ions (CHARMM 27, 3736 atoms)',
-        'skip': True,
+        'info': 'water box + 4 ions',
+        'name': 'wat + 4 ions',
+        'ff': 'CH27',
+        'natoms':  3736,
+        'nres':-1,
     },
-    '51': {
+
+    # protein-membrane
+
+    '501': {
         'psf':'glucl/glucl_autopsf.psf',
         'pdb':'glucl/glucl_autopsf.pdb',
         'pars':['par/par_all36_prot.prm',
                 'par/par_all36_lipid.prm',
                ],
         'info': 'GluCl + POPC memb in vacuum (CHARMM 36, 64247 atoms)',
-        'skip': True,
+        'name': 'GluCl+POPC',
+        'ff': 'CH36',
+        'natoms':  64247,
+        'nres':-1,
     },
 }
 
 
+
+# ===================================================================
+# NAMD configuration file
+# It has three place-holders (%s) that are replaced by psf, pdb and
+#   parameter options.
+# ===================================================================
 namd_conf = """
 structure          %s
 coordinates        %s
@@ -177,6 +284,9 @@ run                 0
 """
 
 
+# ===================================================================
+# Gromacs MDP file
+# ===================================================================
 gmx_mdp = """
 integrator    = md
 nsteps        = 0

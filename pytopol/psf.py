@@ -16,13 +16,8 @@ module_logger = logging.getLogger('mainapp.psf')
 
 
 
-class PSFSystem(object):
-
-    """ PSFSystem class povides functionality to parse PSF files. """
-
-
-
-    def __init__(self, psffile, pdbfile=None, each_chain_is_molecule=False):
+class PSFSystem(blocks.System):
+    def __init__(self, psffile):
         """ Initialization of a PSF file.
 
         Args:
@@ -30,14 +25,10 @@ class PSFSystem(object):
                 the path to the psf file
             pdbfile
                 optional, the path to the pdb file
-            each_chain_is_molecule
-                bool, if True, each segment in the PSF file will be converted
-                to one Molecule instance.
 
         Attributes:
             self.lgr        : logger.Logger
             self.psfile     : str, path to the psf file
-            self.pdbfile    : str, path to the pdb file
             self.molecules  : a tuple of Molecule instances
 
         """
@@ -45,35 +36,16 @@ class PSFSystem(object):
         self.lgr = logging.getLogger('mainapp.psf.PSFSystem')
         self.lgr.debug(">> entering PSFSystem")
 
+        super(PSFSystem, self).__init__()
+
         self.psffile = psffile
         self.molecules = tuple([])
 
         # parse the psf file and create one molecule
         mol = self._parse(self.psffile)
-
-        if mol:
-            self.lgr.debug("the psf molecule was parsed")
-
-            # add pdb file
-            if pdbfile:
-                self.pdbfile = pdbfile
-                self._add_pdbfile(pdbfile, mol)
-
-            # break psf segments to one molecule
-            if each_chain_is_molecule:
-                sepmols = self._process_psf(mol)
-                if sepmols:
-                    self.molecules = tuple(sepmols)
-                    self.lgr.debug(
-                       "%d molecules were generated from the psf file" % len(sepmols))
-                else:
-                    self.lgr.warning(
-                        "could not convert psf segments to molecules")
-            else:
-                self.molecules = tuple([mol])
+        self.molecules = tuple([mol])
 
         self.lgr.debug("<< leaving PSFSystem")
-
 
 
     def __repr__(self):
@@ -83,7 +55,7 @@ class PSFSystem(object):
 
 
 
-    def _add_pdbfile(self, pdbfile, mol):
+    def add_pdbfile(self, pdbfile, mol):
         """ add coordinates form a pdb file to the system."""
 
         pdb = PDBSystem(pdbfile, guess_mols=False)
@@ -188,7 +160,7 @@ class PSFSystem(object):
 
 
 
-    def _process_psf(self, temp_mol):
+    def split_psf(self):
         """Convert a psf Molecule to multiple Molecules.
 
         Using this function only makes sense if the segments in the PSF file
@@ -202,6 +174,9 @@ class PSFSystem(object):
 
         """
 
+        assert len(self.molecules) == 1
+        temp_mol = self.molecules[0]
+
         self.lgr.debug("converting psf to multiple molecules based on chains")
 
         unique_chains = set([chain.name for chain in temp_mol.chains])
@@ -211,7 +186,7 @@ class PSFSystem(object):
 
 
         # counter for different elements in the psf file
-        _NA= _B = _A = _D = _I = _C = _NP = 0
+        _NA= _B = _A = _D = _I = _C  = _NP = 0
         molecules = []
 
 
@@ -273,8 +248,9 @@ class PSFSystem(object):
                     m.pairs.append(p)
                     _NP += 1
 
+
+
             build_res_chain(m)
-            #build_pairs(m)
             m.renumber_atoms()
             molecules.append(m)
 
@@ -350,6 +326,7 @@ class PSFSystem(object):
             a.mass      = float(mass)
 
             m.atoms.append(a)
+
             return True
 
         else:
