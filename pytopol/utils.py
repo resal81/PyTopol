@@ -38,15 +38,7 @@ def build_res_chain(m):
     m.chains = chains
 
 
-def build_londons(m):
-    # the m.atomtypes must be present
 
-    assert len(set(m.atomtypes)) == len(m.atomtypes)   # sanity check - no duplicates
-
-    for i in range(len(m.atomtypes)):
-        for j in range(len(m.atomtypes)):
-            london = blocks.london()
-            pass
 
 
 

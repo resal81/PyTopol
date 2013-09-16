@@ -2,6 +2,7 @@
 import os, logging, time
 from pytopol.psf import PSFSystem
 from pytopol.par import ParType
+import blocks
 
 
 module_logger = logging.getLogger('mainapp.charmmpar')
@@ -189,9 +190,6 @@ class CharmmPar(object):
 
 
 
-        # ---------------------------------------------------------------------
-
-
         # go over the lines in the file
         _main_sections = tuple(main_parts.keys())
         _curr_par      = None
@@ -243,25 +241,38 @@ class CharmmPar(object):
         self.lgr.debug("parsing took %4.1f seconds" % (t2-t1))
 
 
-    def add_params_to_system(self, system, panic_on_missing_param=True, forcefield=''):
+
+
+
+
+    def add_params_to_system(self, system, panic_on_missing_param=True):
         self.lgr.debug("adding parameters to the system...")
         assert isinstance(system , PSFSystem)
 
-        # we use gromacs units
-        for mol in system.molecules:
-            mol.forcefield = forcefield
+        added_atomtypes = []
+        added_bondtypes = []
+        added_angletypes = []
+        added_dihedraltypes = []
+        added_impropertypes = []
+        added_cmaptypes = []
 
-            # -- atoms --
+        for mi, mol in enumerate(system.molecules):
+            mol.forcefield = 'charmm'
+
+
             for atom in mol.atoms:
-
                 at = atom.get_atomtype()
                 if not at:
                     raise ValueError('atom type for atom %s was not found' % atom)
 
+                if at in added_atomtypes:
+                    continue
+
+                added_atomtypes.append(at)
                 p = self.nonbonding.get_parameter(atom.atomtype)
+
                 if len(p) != 1:
-                    msg = "for atom type %s, %d parameters found (expecting 1, found: %s)" % (
-                            atom.atomtype, len(p), p)
+                    msg = "for atom type %s, %d parameters found (expecting 1, found: %s)" % (at, len(p), p)
                     if not panic_on_missing_param:
                         self.lgr.error(msg)
                         continue
@@ -271,18 +282,24 @@ class CharmmPar(object):
                 assert len(p[0]) == 4
                 lje, ljl, lje14, ljl14 = p[0]
 
-                atom.lje = abs(lje) * 4.184
-                atom.ljl = ljl * 2 * 0.1 / (2**(1.0/6.0))
+                newat = blocks.AtomType('charmm')
+                newat.atype = at
+                newat.charmm['param']['lje'] = lje
+                newat.charmm['param']['ljl'] = ljl
+                newat.charmm['param']['lje14'] = lje14
+                newat.charmm['param']['ljl14'] = ljl14
+                system.atomtypes.append(newat)
 
-                if all((lje14, ljl14)):
-                    atom.lje14 = abs(lje14) * 4.184
-                    atom.ljl14 = ljl14 * 2 * 0.1 / (2**(1.0/6.0))
 
-            # -- bonds --
+
             for bond in mol.bonds:
                 at1 = bond.atom1.get_atomtype()
                 at2 = bond.atom2.get_atomtype()
 
+                if (at1, at2) in added_bondtypes or (at2, at1) in added_bondtypes:
+                    continue
+
+                added_bondtypes.append((at1, at2))
                 p = self.bondpars.get_parameter((at1, at2))
 
                 if len(p) != 1:
@@ -295,16 +312,25 @@ class CharmmPar(object):
 
                 assert len(p[0]) == 2
                 kb, b0 = p[0]
-                kb = kb * 2 * 4.184 * (1.0 / 0.01)   # nm^2
-                b0 = b0 * 0.1
-                bond.param.coeffs = (kb, b0)
+
+                newbt = blocks.BondType('charmm')
+                newbt.atype1 = at1
+                newbt.atype2 = at2
+                newbt.charmm['param']['kb'] = kb
+                newbt.charmm['param']['b0'] = b0
+                system.bondtypes.append(newbt)
 
 
-            # -- angels ---
+
             for angle in mol.angles:
                 at1 = angle.atom1.get_atomtype()
                 at2 = angle.atom2.get_atomtype()
                 at3 = angle.atom3.get_atomtype()
+
+                if (at1, at2, at3) in added_angletypes or (at3, at2, at1) in added_angletypes:
+                    continue
+
+                added_angletypes.append((at1, at2, at3))
                 p = self.anglepars.get_parameter((at1, at2, at3))
 
                 if len(p) != 1:
@@ -321,18 +347,29 @@ class CharmmPar(object):
                 kub = kub if kub else 0
                 s0  = s0  if s0  else 0
 
-                ktetha = ktetha * 2 * 4.184
-                kub    = kub    * 2 * 4.184 * 10 * 10
-                s0     = s0     * 0.1
-                angle.param.coeffs = (ktetha, tetha0, kub, s0)
+                newagt = blocks.AngleType('charmm')
+                newagt.atype1 = at1
+                newagt.atype2 = at2
+                newagt.atype3 = at3
+                newagt.charmm['param']['ktetha'] = ktetha
+                newagt.charmm['param']['tetha0'] = tetha0
+                newagt.charmm['param']['kub']    = kub
+                newagt.charmm['param']['s0']     = s0
+
+                system.angletypes.append(newagt)
 
 
-            # -- dihedrals --
+
             for dihedral in mol.dihedrals:
                 at1 = dihedral.atom1.get_atomtype()
                 at2 = dihedral.atom2.get_atomtype()
                 at3 = dihedral.atom3.get_atomtype()
                 at4 = dihedral.atom4.get_atomtype()
+
+                if (at1, at2, at3, at4) in added_dihedraltypes or (at4, at3, at2, at1) in added_dihedraltypes:
+                    continue
+
+                added_dihedraltypes.append((at1, at2 , at3, at4))
                 p = self.dihedralpars.get_charmm_dihedral_wildcard((at1, at2, at3, at4))
 
                 if len(p) == 0:
@@ -343,21 +380,32 @@ class CharmmPar(object):
                     else:
                         raise ValueError(msg)
 
-                for i in range(len(p)):
-                    kchi, n, delta = p[i]
-                    kchi = kchi * 4.184    # no factor of 2 ?
+                newdih = blocks.DihedralType('charmm')
+                newdih.atype1 = at1
+                newdih.atype2 = at2
+                newdih.atype3 = at3
+                newdih.atype4 = at4
 
-                    if not hasattr(dihedral, 'charmm_param'):
-                        dihedral.charmm_param = []
+                for dp in p:
+                    kchi, n, delta = dp
 
-                    dihedral.charmm_param.append((kchi, n, delta))
+                    m = {'kchi':kchi, 'n':n, 'delta': delta}
+                    newdih.charmm['param'].append(m)
 
-            # -- impropers --
+                system.dihedraltypes.append(newdih)
+
+
+
             for improper in mol.impropers:
                 at1 = improper.atom1.get_atomtype()
                 at2 = improper.atom2.get_atomtype()
                 at3 = improper.atom3.get_atomtype()
                 at4 = improper.atom4.get_atomtype()
+
+                if (at1, at2, at3, at4) in added_impropertypes or (at4, at3, at2, at1) in added_impropertypes:
+                    continue
+
+                added_impropertypes.append((at1, at2, at3, at4))
                 p = self.improperpars.get_charmm_improper_wildcard((at1, at2, at3, at4))
 
                 if len(p) != 1:
@@ -371,10 +419,20 @@ class CharmmPar(object):
 
                 assert len(p[0]) == 2
                 kpsi, psi0 = p[0]
-                kpsi = kpsi * 2 * 4.184
-                improper.param.coeffs = (kpsi, psi0)
 
-            # -- cmaps --
+                newimp = blocks.ImproperType('charmm')
+                newimp.atype1 = at1
+                newimp.atype2 = at2
+                newimp.atype3 = at3
+                newimp.atype4 = at4
+
+                newimp.charmm['param']['kpsi'] = kpsi
+                newimp.charmm['param']['psi0'] = psi0
+
+                system.impropertypes.append(newimp)
+
+
+
             for cmap in mol.cmaps:
                 at1 = cmap.atom1.get_atomtype()
                 at2 = cmap.atom2.get_atomtype()
@@ -385,6 +443,10 @@ class CharmmPar(object):
                 at7 = cmap.atom7.get_atomtype()
                 at8 = cmap.atom8.get_atomtype()
 
+                if ((at1, at2, at3, at4, at5, at6, at7, at8)) in added_cmaptypes:
+                    continue
+
+                added_cmaptypes.append((at1, at2, at3, at4, at5, at6, at7, at8))
                 p = self.cmappars.get_parameter((at1, at2, at3, at4, at5, at6, at7, at8))
 
                 if len(p) != 1:
@@ -394,22 +456,29 @@ class CharmmPar(object):
                         self.lgr.error(msg, len(p))
                         continue
                     else:
-                        # print('known keys:')
-                        # for k in list(self.cmappars._data.keys()):
-                        #     print(k)
                         raise ValueError(msg)
 
                 assert len(p[0]) == 24*24, '%d != %d' % (len(p[0]), 24*24)
-                p2 = [m*4.184 for m in p[0]]
-                cmap.param.coeffs = tuple(p2)
+                newcmt = blocks.CMapType('charmm')
+                newcmt.atype1 = at1
+                newcmt.atype2 = at2
+                newcmt.atype3 = at3
+                newcmt.atype4 = at4
+                newcmt.atype5 = at5
+                newcmt.atype6 = at6
+                newcmt.atype7 = at7
+                newcmt.atype8 = at8
+                newcmt.charmm['param'] = p[0]
 
-            # -- pairs --
-            for pair in mol.pairs:
-                at1 = pair.atom1.get_atomtype()
-                at2 = pair.atom2.get_atomtype()
+                system.cmaptypes.append(newcmt)
 
+
+            for nbkey in list(self.nbfix._data.keys()):
+                if mi != 0:
+                    continue   # just for the first molecule
+
+                at1, at2 = nbkey
                 p = self.nbfix.get_parameter((at1, at2))
-
                 if len(p) == 0:
                     continue  #
 
@@ -425,32 +494,13 @@ class CharmmPar(object):
 
                 assert len(p[0]) == 2
                 eps, rmin = p[0]
-                eps = abs(eps) * 4.184
-                rmin = rmin * 0.1 / (2**(1.0/6.0))   # no *2
-                pair.param.coeffs = (eps, rmin)
+                newnb = blocks.InteractionType('charmm')
+                newbt.atype1 = at1
+                newbt.atype2 = at2
+                newbt.charmm['param']['lje'] = eps
+                newbt.charmm['param']['ljl'] = rmin
 
-            # for inter in list(self.nbfix._data.keys):
-            #     at1 = inter[0]
-            #     at2 = inter[1]
-            #     p = self.nbfix.get_parameter((at1, at2))
-            #     assert len(p) == 1
-
-            #     eps, rmin = p[0]
-            #     eps = abs(eps) * 4.184
-            #     rmin = rmin * 0.1 / (2**(1.0/6.0))   # no *2
-
-            #     m = blocks.
-            #     pair.param.coeffs = (eps, rmin)
-
-
-
-
-
-
-
-
-
-
+                system.interactiontypes.append(newbt)
 
 if __name__ == '__main__':
     import sys

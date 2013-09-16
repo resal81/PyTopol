@@ -1,5 +1,18 @@
 
 
+class System(object):
+    def __init__(self):
+        self.molecules = tuple([])
+
+        self.atomtypes = []
+        self.bondtypes = []
+        self.angletypes= []
+        self.dihedraltypes    = []
+        self.impropertypes    = []
+        self.cmaptypes        = []
+        self.interactiontypes = []
+
+
 class Molecule(object):
 
     def __init__(self):
@@ -7,14 +20,11 @@ class Molecule(object):
         self.atoms     = []
         self.residues  = []
 
-        self.atomtypes = []
-
         self.bonds     = []
         self.angles    = []
         self.dihedrals = []
         self.impropers = []
         self.cmaps     = []
-        self.londons   = []
 
         self.forcefield=  None
         self._anumb_to_atom = {}
@@ -169,45 +179,83 @@ class Param:
             else:
                 raise NotImplementedError
 
+
+
         if isinstance(self, AtomType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                self.gromacs['param']['lje'] = abs(self.charmm['param']['lje']) * 4.184
+                self.gromacs['param']['ljl'] = self.charmm['param']['ljl'] * 2 * 0.1 / (2**(1.0/6.0))
+
+                if self.charmm['param']['lje14'] is not None:
+                    self.gromacs['param']['lje14'] = abs(self.charmm['param']['lje14']) * 4.184
+                    self.gromacs['param']['ljl14'] = self.charmm['param']['ljl14'] * 2 * 0.1 / (2**(1.0/6.0))
             else:
                 raise NotImplementedError
+
+
 
         elif isinstance(self, BondType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                self.gromacs['param']['kb'] = self.charmm['param']['kb'] * 2 * 4.184 * (1.0 / 0.01)   # nm^2
+                self.gromacs['param']['b0'] = self.charmm['param']['b0'] * 0.1
+                self.gromacs['func'] = 1
             else:
                 raise NotImplementedError
+
+
 
         elif isinstance(self, AngleType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                self.gromacs['param']['ktetha'] = self.charmm['param']['ktetha'] * 2 * 4.184
+                self.gromacs['param']['tetha0'] = self.charmm['param']['tetha0']
+                self.gromacs['param']['kub'] = self.charmm['param']['kub'] * 2 * 4.184 * 10 * 10
+                self.gromacs['param']['s0'] = self.charmm['param']['s0'] * 0.1
+                self.gromacs['func'] = 5
             else:
                 raise NotImplementedError
+
+
 
         elif isinstance(self, DihedralType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                for dih in self.charmm['param']:
+                    convdih = {}
+                    convdih['kchi']  = dih['kchi'] * 4.184
+                    convdih['n']     = dih['n']
+                    convdih['delta'] = dih['delta']
+                    self.gromacs['param'].append(convdih)
+                self.gromacs['func'] = 9
             else:
                 raise NotImplementedError
+
+
 
         elif isinstance(self, ImproperType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                self.gromacs['param']['kpsi'] = self.charmm['param']['kpsi'] * 2 * 4.184
+                self.gromacs['param']['psi0'] = self.charmm['param']['psi0']
             else:
                 raise NotImplementedError
+
+
 
         elif isinstance(self, CMapType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                self.gromacs['param']= [n*4.184 for n in self.charmm['param']]
+                self.gromacs['func'] = 1
             else:
                 raise NotImplementedError
 
+
+
         elif isinstance(self, InteractionType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                pass
+                self.gromacs['param']['lje'] = abs(self.charmm['param']['lje']) * 4.184
+                self.gromacs['param']['ljl'] = self.charmm['param']['ljl'] * 0.1 / (2**(1.0/6.0))  # no *2
+
+                if self.charmm['param']['lje14'] is not None:
+                    self.gromacs['param']['lje14'] = abs(self.charmm['param']['lje14']) * 4.184
+                    self.gromacs['param']['ljl14'] = self.charmm['param']['ljl14'] * 0.1 / (2**(1.0/6.0))
             else:
                 raise NotImplementedError
 
@@ -233,7 +281,7 @@ class BondType(Param):
         self.atype1 = None
         self.atype2 = None
 
-        self.charmm = {'param': {} }
+        self.charmm = {'param': {'kb':None, 'b0':None} }
         self.gromacs= {'param': {}, 'func':None}
 
 
@@ -246,7 +294,7 @@ class AngleType(Param):
         self.atype2 = None
         self.atype3 = None
 
-        self.charmm = {}
+        self.charmm = {'param':{'ktetha':None, 'tetha0':None, 'kub':None, 's0':None} }
         self.gromacs= {}
 
 
@@ -260,8 +308,8 @@ class DihedralType(Param):
         self.atype3 = None
         self.atype4 = None
 
-        self.charmm = {}
-        self.gromacs= {}
+        self.charmm = {'param':[]}  # {kchi, n, delta}
+        self.gromacs= {'param':[]}
 
 
 class ImproperType(Param):
@@ -274,7 +322,7 @@ class ImproperType(Param):
         self.atype3 = None
         self.atype4 = None
 
-        self.charmm = {}
+        self.charmm = {'param': {'kpsi': None, 'psi0':None} }
         self.gromacs= {}
 
 
@@ -292,7 +340,7 @@ class CMapType(Param):
         self.atype7 = None
         self.atype8 = None
 
-        self.charmm = {}
+        self.charmm = {'param': []}
         self.gromacs= {}
 
 
