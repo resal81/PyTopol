@@ -119,7 +119,7 @@ I used `psf2top.py` to convert several `psf` files to GROMACS format
 
 Notes:
 
-*  For these tests, first the `psf` file was created and then converted toGROMACS format.
+*  For these tests, first the `psf` file was created and then converted to GROMACS format.
 *  The `psf` files for these systems are in `test/systems`.
 *  For more info on automation of these tests, see `test/systems/README.md`.
 *  `GMX-NAMD` is the absolute difference (i.e. `gromacs-namd`) and `% |diff|` is
