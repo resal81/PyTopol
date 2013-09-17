@@ -4,8 +4,8 @@
 # Paths for the programs
 # ===================================================================
 paths = {
-    #'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
-    'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
+    'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
+    #'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
     'namd'   : '/Users/Reza/Workspace/Programs/namd/2.9',
     'psf2top': '/Users/Reza/Devel/pytopol/scripts/psf2top.py',
 }
@@ -26,14 +26,16 @@ skip_systems = [
     '001', #'002',
     '003', '004', '005', '006', '007', '008', '009', '010',
 
-    '101', '102',
+    # '101',    # popc memb
+    # '102',    # dopc memb
 
-    #'201',
-    #'301',
+    # '201',    # Lysozyme
+    # '301',    # cholestrol
 
     '401', '402', '403',
 
     '501',     # glucl
+
     '601',      # gic
     '602',      # vid : pr + chol + lipid
     '603',      # vid : pr + chol
@@ -41,7 +43,7 @@ skip_systems = [
     '605',      # vid : chol + lipid
     '606',      # vid : chol
     '607',      # vid : lipid
-   # '608',      # vid : one DOPC
+    '608',      # vid : one DOPC
 ]
 
 systems = {
