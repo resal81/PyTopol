@@ -115,57 +115,7 @@ I used `psf2top.py` to convert several `psf` files to GROMACS format
   GROMACS 4.6.3 (double-precision).
 
 
-#### Tests setup
-
-GROMACS simulations were run using:
-
-    $ grompp -f mdpfile -c pdbfile -p top.top -o topol.tpr
-    $ mdrun -nt 1 -s topol.tpr -rerun pdbfile -g gromacs.log
-
-NAMD simulations were run using:
-
-    $ namd2 +p1 conf
-
-*GROMACS MDP file*
-```
-integrator    = md
-nsteps        = 0
-nstlog        = 1
-nstlist       = 0
-ns_type       = simple
-rlist         = 0
-coulombtype   = cut-off
-rcoulomb      = 0
-rvdw          = 0
-pbc           = no
-```
-
-*NAMD configuration file*
-```
-structure          [psffile]
-coordinates        [pdbfile]
-
-paratypecharmm      on
-parameters         [parameter files]
-exclude             scaled1-4
-1-4scaling          1.0
-
-switching           off
-cutoff              1000
-pairlistdist        1000
-timestep            1.0
-outputenergies      1
-outputtiming        1
-binaryoutput        no
-
-outputname          namd
-dcdfreq             1
-temperature         300
-run                 0
-```
-
-
-#### Results of select systems
+### Results of select systems
 
 Notes:
 
@@ -257,6 +207,54 @@ Table 2. Detail of the NAMD and GROMACS energies (kcal/mol) for select systems.
     -----------------------------------------------------------
 ```
 
+### Tests setup
+
+GROMACS simulations were run using:
+
+    $ grompp -f mdpfile -c pdbfile -p top.top -o topol.tpr
+    $ mdrun -nt 1 -s topol.tpr -rerun pdbfile -g gromacs.log
+
+NAMD simulations were run using:
+
+    $ namd2 +p1 conf
+
+*GROMACS MDP file*
+```
+integrator    = md
+nsteps        = 0
+nstlog        = 1
+nstlist       = 0
+ns_type       = simple
+rlist         = 0
+coulombtype   = cut-off
+rcoulomb      = 0
+rvdw          = 0
+pbc           = no
+```
+
+*NAMD configuration file*
+```
+structure          [psffile]
+coordinates        [pdbfile]
+
+paratypecharmm      on
+parameters         [parameter files]
+exclude             scaled1-4
+1-4scaling          1.0
+
+switching           off
+cutoff              1000
+pairlistdist        1000
+timestep            1.0
+outputenergies      1
+outputtiming        1
+binaryoutput        no
+
+outputname          namd
+dcdfreq             1
+temperature         300
+run                 0
+```
 
 
 ## Contribution
