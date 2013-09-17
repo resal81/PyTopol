@@ -138,7 +138,7 @@ class PSFSystem(blocks.System):
                     if line.split()[1].strip(':') in known_sections:
                         _sec = line.split()[1].strip(':')
                     else:
-                        self.lgr.debug("skipping section`: '%s'" % line)
+                        self.lgr.debug("skipping section: '%s'" % line)
                         _sec = None
                     continue
 
@@ -243,7 +243,7 @@ class PSFSystem(blocks.System):
                     _C += 1
 
             for p in temp_mol.pairs:
-                if _AC_map[b.atom1] == chainname and _AC_map[b.atom2] == chainname:
+                if _AC_map[p.atom1] == chainname and _AC_map[p.atom2] == chainname:
 
                     m.pairs.append(p)
                     _NP += 1
@@ -263,7 +263,7 @@ class PSFSystem(blocks.System):
         assert len(temp_mol.cmaps)     == _C
         assert len(temp_mol.pairs)     == _NP
 
-        return molecules
+        self.molecules = tuple(molecules)
 
 
 

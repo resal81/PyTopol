@@ -4,8 +4,8 @@
 # Paths for the programs
 # ===================================================================
 paths = {
-    'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
-    #'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
+    #'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
+    'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
     'namd'   : '/Users/Reza/Workspace/Programs/namd/2.9',
     'psf2top': '/Users/Reza/Devel/pytopol/scripts/psf2top.py',
 }
@@ -26,14 +26,22 @@ skip_systems = [
     '001', #'002',
     '003', '004', '005', '006', '007', '008', '009', '010',
 
-    #'101', '102',
+    '101', '102',
 
     #'201',
     #'301',
 
     '401', '402', '403',
 
-    '501',
+    '501',     # glucl
+    '601',      # gic
+    '602',      # vid : pr + chol + lipid
+    '603',      # vid : pr + chol
+    '604',      # vid : pr
+    '605',      # vid : chol + lipid
+    '606',      # vid : chol
+    '607',      # vid : lipid
+   # '608',      # vid : one DOPC
 ]
 
 systems = {
@@ -249,6 +257,116 @@ systems = {
         'ff': 'CH36',
         'natoms':  64247,
         'nres':-1,
+    },
+
+    # archive $ gic
+
+    '601': {
+       'psf':'archive/gic/D_system_nowat_autopsf.psf',
+        'pdb':'archive/gic/D_system_nowat_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+                'par/par_all36_cgenff.prm',
+                'archive/gic/lig.par',
+               ],
+        'info': 'Channel + lig + lipid',
+        'name': 'Channel+POPC',
+        'ff': 'CH36',
+        'natoms':  -1,
+        'nres':-1,
+    },
+
+    # archive # vid
+    '602': {
+       'psf':'archive/vid/1_prot_chol_lipid_autopsf.psf',
+        'pdb':'archive/vid/1_prot_chol_lipid_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+                'par/par_all36_cgenff.prm',
+                'par/par_chol.par',
+               ],
+        'info': 'Protein + chol + lipid',
+        'name': 'P+C+L',
+        'ff': 'CH36',
+        'natoms':  27562,
+        'nres':458,
+    },
+     '603': {
+       'psf':'archive/vid/2_prot_chol_autopsf.psf',
+        'pdb':'archive/vid/2_prot_chol_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+                'par/par_all36_cgenff.prm',
+                'par/par_chol.par',
+               ],
+        'info': 'Protein + chol',
+        'name': 'P+C',
+        'ff': 'CH36',
+        'natoms':  10324,
+        'nres':298,
+    },
+     '604': {
+       'psf':'archive/vid/3_prot_autopsf.psf',
+        'pdb':'archive/vid/3_prot_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+               ],
+        'info': 'Protein',
+        'name': 'P',
+        'ff': 'CH36',
+        'natoms':  4294,
+        'nres':282,
+    },
+    '605': {
+       'psf':'archive/vid/4_chol_lipid_autopsf.psf',
+        'pdb':'archive/vid/4_chol_lipid_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+                'par/par_all36_cgenff.prm',
+                'par/par_chol.par',
+               ],
+        'info': 'Chol + lipid',
+        'name': 'C+L',
+        'ff': 'CH36',
+        'natoms':  23264,
+        'nres':176,
+    },
+    '606': {
+       'psf':'archive/vid/5_chol_autopsf.psf',
+        'pdb':'archive/vid/5_chol_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+                'par/par_all36_cgenff.prm',
+                'par/par_chol.par',
+               ],
+        'info': 'Chol',
+        'name': 'C',
+        'ff': 'CH36',
+        'natoms':  1184,
+        'nres':16,
+    },
+    '607': {
+       'psf':'archive/vid/6_lipid_autopsf.psf',
+        'pdb':'archive/vid/6_lipid_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'Lipid',
+        'name': 'L',
+        'ff': 'CH36',
+        'natoms':  22080,
+        'nres':160,
+    },
+    '608': {
+       'psf':'archive/vid/7_1dopc_autopsf.psf',
+        'pdb':'archive/vid/7_1dopc_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': '1 DOPC',
+        'name': '1 DOPC',
+        'ff': 'CH36',
+        'natoms':  138,
+        'nres':1,
     },
 }
 

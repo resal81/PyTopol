@@ -53,7 +53,7 @@ def build_pairs(m):
     _bonds = set(_bonds)
     _angles = set(_angles)
 
-    _pairs = []
+    _pairs = set([])
     for dih in m.dihedrals:
         p1 = dih.atom1.number
         p4 = dih.atom4.number
@@ -65,7 +65,7 @@ def build_pairs(m):
         if (p1,p4) in _pairs or (p4,p1) in _pairs:
             continue
 
-        _pairs.append((p1,p4))
+        _pairs.add((p1,p4))
 
         thispair = blocks.Pair()
         thispair.atom1 = dih.atom1

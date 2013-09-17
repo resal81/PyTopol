@@ -260,14 +260,13 @@ def main():
 
 
     for k in systems_keys:
+        # should we skip this test ?
+        if k in config.skip_systems:
+            continue
 
         # if the output directory for the test `k` still exists, remove it
         if os.path.exists(k):
             shutil.rmtree(k)
-
-        # should we skip this test ?
-        if k in config.skip_systems:
-            continue
 
         # get the absolute paths
         systems[k]['psf'] = os.path.abspath(systems[k]['psf'])
@@ -387,21 +386,26 @@ def summarize_test_outputs(systems):
     print('\n\n')
     desc = 'Table 2. Summary of the difference between GROMACS and NAMD energies.'
     print(desc)
-    print('-' * 110)
-    print('{:12s}  {:6s}  {:4s} {:^13s} {:^13s} {:^13s} {:^13s} {:^13s} {:^13s}'.format(
-           ' ','natoms', 'ff', 'bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'))
+    print('-' * 110 + ' ' + '-' * 13)
+    print('{:12s}  {:6s}  {:4s} {:^13s} {:^13s} {:^13s} {:^13s} {:^13s} {:^13s}  {:^12s}'.format(
+           ' ','natoms', 'ff', 'bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw', 'sum'))
 
-    print('-' * 110)
+    print('-' * 110 + ' ' + '-' * 13)
 
     for k in system_keys:
         if k in config.skip_systems:
             continue
 
         sys = systems[k]
+        potnamd = 0
+        potgmx  = 0
         s = '%12s  %6d  %4s  ' % (sys['name'], sys['natoms'], sys['ff'] )
         for m in ('bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'):
             namd = systems[k]['namd_result'][m]
             gromacs = systems[k]['gromacs_result'][m]
+
+            potnamd += namd
+            potgmx  += gromacs
 
             diff =  gromacs - namd
 
@@ -412,8 +416,16 @@ def summarize_test_outputs(systems):
                 diffp =  '%4.1f' % (diffp)
             s += '%5.2f (%4s)  ' % (diff, diffp)
 
+        diff = potgmx - potnamd
+        if potnamd == 0:
+            diffp = '0.0'
+        else:
+            diffp = abs(  ((potgmx-potnamd)/potnamd) * 100.0  )
+            diffp =  '%4.1f' % (diffp)
+        s += '%5.2f (%4s)  ' % (diff, diffp)
+
         print(s)
-    print('-' * 110)
+    print('-' * 110 + ' ' + '-' * 13)
 
 if __name__ == '__main__':
     main()
