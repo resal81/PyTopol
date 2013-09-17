@@ -21,7 +21,7 @@ PyTopol is currently in *alpha stage*. The results for several
 systems are shown below which are encouraging. However, before using it for
 production simulations, more testing is needed.
 
-Current version is 0.1.3. All 0.1.x versions will be considered alpha.
+Current version is 0.1.4. All 0.1.x versions will be considered alpha.
 
 
 ### Feedback
@@ -112,7 +112,7 @@ You can add `-v` for debug information.
 
 I used `psf2top.py` to convert several `psf` files to GROMACS format
   and then compared the resulting single-point energies using NAMD 2.9 and
-  GROMACS 4.5.7.
+  GROMACS 4.6.3 (double-precision).
 
 
 #### Tests setup
@@ -178,52 +178,51 @@ Notes:
    `(gromacs-namd)/namd * 100`.
 
 
-002 - AD in vacuum
+Table 1. Summary of the NAMD and GROMACS energies.
 
+```
+    -----------------------------------------------------------
+    002 - AD in vacuum
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond        79.78        79.78     -0.0001      0.000
-         angle        39.94        39.94      0.0001      0.000
+         angle        39.94        39.94     -0.0001      0.000
       dihedral         4.34         4.34     -0.0000      0.000
       improper         0.06         0.06     -0.0000      0.069
           coul        -0.61        -0.61      0.0000      0.001
            vdw        21.39        21.39     -0.0000      0.000
 
-
-101 - POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
-
+    -----------------------------------------------------------
+    101 - POPC membrane in vaccum (CHARMM 36, 74 POPC, 9916 atoms)
                        NAMD      GROMACS    GMX-NAMD   % |diff|
-          bond       134.20       134.20     -0.0013      0.001
-         angle      1611.89      1611.88     -0.0071      0.000
+          bond       134.20       134.20     -0.0004      0.000
+         angle      1611.89      1611.89      0.0000      0.000
       dihedral      3737.28      3737.28      0.0045      0.000
       improper        10.31        10.31     -0.0000      0.000
-          coul     -2377.17     -2377.13      0.0464      0.002
+          coul     -2377.17     -2377.17     -0.0014      0.000
            vdw     -2663.91     -2663.91     -0.0036      0.000
 
-
-102 - DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)
-
+    -----------------------------------------------------------
+    102 - DOPC membrane in vaccum (CHARMM 36, 76 DOPC, 10488 atoms)
                        NAMD      GROMACS    GMX-NAMD   % |diff|
-          bond       143.88       143.88     -0.0007      0.001
-         angle      1591.22      1591.21     -0.0127      0.001
-      dihedral      4376.74      4376.72     -0.0167      0.000
+          bond       143.88       143.88     -0.0003      0.000
+         angle      1591.22      1591.22      0.0016      0.000
+      dihedral      4376.74      4376.74      0.0072      0.000
       improper        11.69        11.69     -0.0000      0.000
           coul     -2254.60     -2254.59      0.0092      0.000
            vdw     -2896.05     -2896.05      0.0032      0.000
 
-
-201 - 1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)
-
+    -----------------------------------------------------------
+    201 - 1LYZ in vacuum (CHARMM 27+CMAP, 129 residues, 1966 atoms)
                        NAMD      GROMACS    GMX-NAMD   % |diff|
-          bond       120.03       120.03     -0.0003      0.000
+          bond       120.03       120.03     -0.0001      0.000
          angle       354.94       354.94      0.0008      0.000
       dihedral       338.70       338.68     -0.0187      0.006
-      improper        19.78        19.78      0.0001      0.000
+      improper        19.78        19.78      0.0000      0.000
           coul     -3995.40     -3995.41     -0.0134      0.000
-           vdw      -568.16      -568.16     -0.0015      0.000
+           vdw      -568.16      -568.16      0.0009      0.000
 
-
-301 - Cholesterol in vacuum (CHARMM 36, 74 atoms)
-
+    -----------------------------------------------------------
+    301 - Cholesterol in vacuum (CHARMM 36, 74 atoms)
                        NAMD      GROMACS    GMX-NAMD   % |diff|
           bond         7.93         7.93     -0.0000      0.000
          angle        58.62        58.62      0.0000      0.000
@@ -232,6 +231,8 @@ Notes:
           coul       -57.90       -57.90     -0.0001      0.000
            vdw         4.99         4.99     -0.0000      0.000
 
+    -----------------------------------------------------------
+```
 
 
 
@@ -246,14 +247,6 @@ There are many ways you can help to improve **PyTopol**:
 
 * Fork this repo, implement improvements and send me a pull request.
 
-
-## ToDo
-* More tests.
-* Support `CHARMM`-formatted `psf` files.
-* For `xplor`-formatted `psf` files, should we check for duplicate dihedrals?
-* Support `xplor`-formatted parameter files.
-* Create `posre.itp` file.
-* Setup test coverage, tox.ini and travis.yaml.
 
 ## Acknowledgement
 * Energy conversion factors are from `charmm2gromacs-pvm.py` script by Par Bjelkmar,

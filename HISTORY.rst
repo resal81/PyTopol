@@ -3,6 +3,13 @@
 History
 -------
 
+0.1.4 (2013-09-17)
+++++++++++++++++++
+
+* Faster pair generation
+* Switch to gromacs 4.6.3-double for tests
+* Fixed a bug for multi-chain systems
+
 0.1.3 (2013-09-16)
 ++++++++++++++++++
 

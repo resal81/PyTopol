@@ -4,8 +4,8 @@
 # Paths for the programs
 # ===================================================================
 paths = {
-    'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
-    #'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
+    # 'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
+    'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
     'namd'   : '/Users/Reza/Workspace/Programs/namd/2.9',
     'psf2top': '/Users/Reza/Devel/pytopol/scripts/psf2top.py',
 }
