@@ -1,5 +1,5 @@
 import logging
-from pytopol import blocks
+from pytopol.parsers import blocks
 
 lgr = logging.getLogger('mainapp.utils')
 

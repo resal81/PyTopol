@@ -26,7 +26,7 @@ This scritp automates the conversion of PSF file to GROMACS topology.
 
 import argparse, sys, os
 import logging
-from pytopol import charmmpar, grotop, psf
+from pytopol.parsers import charmmpar, grotop, psf
 from pytopol import __version__ as version
 
 

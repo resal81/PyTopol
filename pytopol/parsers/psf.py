@@ -3,9 +3,9 @@ This module provides tools for working with PSF files.
 
 """
 
-from pytopol.utils import build_res_chain, build_pairs
-from pytopol.pdb import PDBSystem
-from pytopol import blocks
+from pytopol.parsers.utils import build_res_chain, build_pairs
+from pytopol.parsers.pdb import PDBSystem
+from pytopol.parsers import blocks
 
 import os
 import logging

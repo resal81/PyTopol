@@ -1,6 +1,6 @@
 
-from pytopol import blocks
-from pytopol.utils import build_res_chain
+from pytopol.parsers import blocks
+from pytopol.parsers.utils import build_res_chain
 import os, logging, time
 
 

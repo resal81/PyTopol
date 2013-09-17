@@ -1,7 +1,7 @@
 
 import os, logging, time
-from pytopol.psf import PSFSystem
-from pytopol.par import ParType
+from pytopol.parsers.psf import PSFSystem
+from pytopol.parsers.par import ParType
 import blocks
 
 
