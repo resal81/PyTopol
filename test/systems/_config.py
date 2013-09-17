@@ -37,7 +37,7 @@ skip_systems = [
     '501',     # glucl
 
     '601',      # gic
-    '602',      # vid : pr + chol + lipid
+    #'602',      # vid : pr + chol + lipid
     '603',      # vid : pr + chol
     '604',      # vid : pr
     '605',      # vid : chol + lipid
@@ -67,7 +67,7 @@ systems = {
         'info': 'AD in vacuum',
         'name': 'AD peptide',
         'ff': 'CH27',
-        'natoms':  -1,
+        'natoms':  22,
         'nres':2,
     },
     '003': {

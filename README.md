@@ -169,16 +169,29 @@ run                 0
 
 Notes:
 
-*  For these tests, first the `psf` file was created and then converted to
-  GROMACS format.
+*  For these tests, first the `psf` file was created and then converted toGROMACS format.
 *  The `psf` files for these systems are in `test/systems`.
 *  For more info on automation of these tests, see `test/systems/README.md`.
-*  Energies are in kcal/mol.
-*  `Diff` is the absolute difference (i.e. `gromacs-namd`) and `%Diff` is
+*  `GMX-NAMD` is the absolute difference (i.e. `gromacs-namd`) and `% |diff|` is
    `(gromacs-namd)/namd * 100`.
 
 
-Table 1. Summary of the NAMD and GROMACS energies.
+Table 1. Summary of the difference between GROMACS and NAMD energies (kcal/mol). Percentages are shown in the parantheses.
+
+```
+    --------------------------  ------------
+                  natoms  ff     potential
+    --------------------------  ------------
+      AD peptide      22  CH27  -0.00 ( 0.0)
+       POPC memb    9916  CH36  -0.00 ( 0.0)
+       DOPC memb   10488  CH36   0.02 ( 0.0)
+        Lysozyme    1966  CH27  -0.03 ( 0.0)
+     Cholesterol      74  CH36  -0.00 ( 0.0)
+      Prot+Lipid   27562  CH36  -0.07 ( 0.0)
+    --------------------------  ------------
+```
+
+Table 2. Detail of the NAMD and GROMACS energies (kcal/mol) for select systems.
 
 ```
     -----------------------------------------------------------
@@ -232,8 +245,17 @@ Table 1. Summary of the NAMD and GROMACS energies.
            vdw         4.99         4.99     -0.0000      0.000
 
     -----------------------------------------------------------
-```
+    602 - Protein + chol + lipid (27562 atoms)
+                       NAMD      GROMACS    GMX-NAMD   % |diff|
+          bond    188594.57    188594.65      0.0721      0.000
+         angle    108498.82    108498.80     -0.0138      0.000
+      dihedral     14964.16     14964.09     -0.0706      0.000
+      improper       746.82       746.82      0.0000      0.000
+          coul     -8781.08     -8781.09     -0.0118      0.000
+           vdw    196098.35    196098.30     -0.0451      0.000
 
+    -----------------------------------------------------------
+```
 
 
 
