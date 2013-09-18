@@ -18,9 +18,10 @@ reverse conversion of GROMACS topologies to NAMD is planned an will be implement
 
 
 ### Current stage
-PyTopol is currently in *alpha stage*. See the test results of current tests below.
 
-Current version is 0.1.6. All 0.1.x versions will be considered alpha.
+Current version is 0.1.6.
+
+All 0.1.x versions will be considered **alpha**. See the results for the current tests below.
 
 
 ### Feedback
@@ -35,11 +36,11 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 ## Quickstart
 
 #### Installation
-[How to install PyTopol](https://github.com/resal81/PyTopol/wiki/PyTopol-Installation).
+[How to install PyTopol](https://github.com/resal81/PyTopol/wiki/PyTopol-Installation)
 
 
-#### psf2top.py
-[How to use psf2top.py](https://github.com/resal81/PyTopol/wiki/psf2top-Usage).
+#### psf2top.py Usage
+[Notes about using psf2top.py](https://github.com/resal81/PyTopol/wiki/psf2top-Usage)
 
 **Table 1**. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol). Single and double correspond to the single and double-precision versions of GROMCAS.
 
