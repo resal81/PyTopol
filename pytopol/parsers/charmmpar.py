@@ -88,6 +88,22 @@ class CharmmPar(object):
         with open(fname) as f:
             _lines = f.readlines()
 
+        # check if this is a stream file
+        is_stream_file = False
+        stream_i = None
+        stream_j = len(_lines)
+        for m, line in enumerate(_lines):
+            if line.startswith('read para'):
+                is_stream_file = True
+                stream_i = m + 1
+                continue
+            if is_stream_file:
+                if line.strip().lower() == 'end':
+                    stream_j = m
+
+        if is_stream_file:
+            _lines = _lines[stream_i:stream_j]
+
 
         # helper function to parse a line -------------------------------------
         def _parse_par_line(line, _curr_par):
@@ -213,7 +229,7 @@ class CharmmPar(object):
             elif line.startswith('cutnb'):
                 pass
 
-            elif line.startswith(( 'HBOND', )):
+            elif line.startswith(( 'HBOND', 'ATOM')):
                 _curr_par = None
 
             elif line.startswith('CMAP'):
