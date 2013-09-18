@@ -5,15 +5,16 @@ Reza Salari - [Brannigan Lab](http://branniganlab.org)
 ### Introduction
 
 **PyTopol** provides utilities to convert certain molecular topologies.
-Currently it supports converting CHARMM `psf` files
-to GROMACS topology format through the `psf2top.py` utility. If you'd like
-to use GROMACS topologies in NAMD, please see
-[here](http://www.ks.uiuc.edu/Research/namd/2.9/ug/node14.html).
-
-PyTopol follows a different approach than the force-field conversion tools and
+It follows a different approach than the force-field conversion tools and
 is intended to convert the full-topology of a molecule from one format to
 another. This allows conversion of custom-parameterized topologies across
 MD packages.
+
+Currently PyTopol includes the following utilities:
+
+* **psf2top.py** : for converting CHARMM `psf` files to GROMACS topology format. The
+reverse conversion of GROMACS topologies to NAMD is planned an will be implemented. Also see
+[here](http://www.ks.uiuc.edu/Research/namd/2.9/ug/node14.html).
 
 
 ### Current stage
@@ -35,31 +36,34 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
 ## Quickstart
 
-[PyTopol installation](https://github.com/resal81/PyTopol/wiki/PyTopol-Installation)
+[How to install PyTopol](https://github.com/resal81/PyTopol/wiki/PyTopol-Installation).
 
-[psf2top usage](https://github.com/resal81/PyTopol/wiki/psf2top-Usage)
+[How to use psf2top.py](https://github.com/resal81/PyTopol/wiki/psf2top-Usage).
 
-[psf2top tests](https://github.com/resal81/PyTopol/wiki/psf2top-Tests)
+[Comparison of NAMD and GROMACS for converted PSF topologies](https://github.com/resal81/PyTopol/wiki/psf2top-Tests).
 
-## Test Results
+## Summary of test results
 
-### psf2top.py
+#### psf2top.py
 
 **Table 1.** Summary of the difference in potential energies (kcal/mol) between GROMACS 4.6.3 and NAMD 2.9 for
-selected topologies converted from `psf`.  Percentages are shown in the parantheses. Single and double correspond to
-the single and double-precision versions of GROMCAS.
+selected topologies converted from `psf`.  Percentages of the differences are shown in the parantheses.
+Single and double correspond to
+the single and double-precision versions of GROMCAS. Potential eneriges were considered as the sum of bond, angle, dihedral,
+improper dihedral and nonbonding (LJ and coulombic) energies.
 ```
 --------------------------  -----------------  -----------------
-              natoms  ff    GMX(double)-NAMD   GMX(single)-NAMD
+              natoms  ff    GMX-NAMD (double)  GMX-NAMD (single)
 --------------------------  -----------------  -----------------
   AD peptide      22  CH27  -0.000 ( 0.00 %)    -0.000 ( 0.00 %)
    POPC memb    9916  CH36  -0.001 ( 0.00 %)     0.063 ( 0.01 %)
    DOPC memb   10488  CH36   0.021 ( 0.00 %)     0.006 ( 0.00 %)
     Lysozyme    1966  CH27  -0.031 ( 0.00 %)    -0.028 ( 0.00 %)
  Cholesterol      74  CH36  -0.000 ( 0.00 %)    -0.000 ( 0.00 %)
-Prot + Lipid   27562  CH36  -0.069 ( 0.00 %)    -0.906 ( 0.00 %)
+ Pr+Chol+Lip   27562  CH36  -0.069 ( 0.00 %)    -0.906 ( 0.00 %)
 --------------------------  -----------------  -----------------
 ```
+For the detailed results, please see [here](https://github.com/resal81/PyTopol/wiki/psf2top-Tests).
 
 
 ## Contribution

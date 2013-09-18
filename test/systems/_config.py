@@ -28,8 +28,8 @@ run_systems = [
     '002',
     # '003', '004', '005', '006', '007', '008', '009', '010',
 
-    # '101',    # popc memb
-    # '102',    # dopc memb
+    '101',    # popc memb
+    '102',    # dopc memb
 
     '201',    # Lysozyme
     '301',    # cholestrol
@@ -39,7 +39,7 @@ run_systems = [
     # '501',     # glucl
 
     # '601',      # gic
-    # '602',      # vid : pr + chol + lipid
+    '602',      # vid : pr + chol + lipid
     # '603',      # vid : pr + chol
     # '604',      # vid : pr
     # '605',      # vid : chol + lipid
@@ -291,7 +291,7 @@ systems = {
                 'par/par_chol.par',
                ],
         'info': 'Protein + chol + lipid',
-        'name': 'P+C+L',
+        'name': 'Pr+Chol+Lip',
         'ff': 'CH36',
         'natoms':  27562,
         'nres':458,
