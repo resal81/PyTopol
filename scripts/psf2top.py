@@ -27,37 +27,18 @@ This scritp automates the conversion of PSF file to GROMACS topology.
 import argparse, sys, os
 import logging
 from pytopol.parsers import charmmpar, grotop, psf
-from pytopol import __version__ as version
+from pytopol.general.utils import setup_logging, version_info
 
 
-def _setup_logging(debug_level=logging.DEBUG):
-    """ Setup initial logging.
 
-    Args:
-        debug_level: the level for debugging
-    Returns:
-        a logging.Logger instance
-
-    """
-
-    lgr = logging.getLogger('mainapp')
-    lgr.setLevel(debug_level)
-
-    frmt = logging.Formatter('%(name)-30s - %(levelname)-8s - %(message)s')
-    ch = logging.StreamHandler()
-    ch.setLevel(debug_level)
-    ch.setFormatter(frmt)
-
-    lgr.addHandler(ch)
-
-    return lgr
 
 
 def print_note():
     note = '''
     ------------------------------------------------------------------------
-    PyTopol version %s.
+    PyTopol version %s%s.
 
+    ------------------------------------------------------------------------
     Please note that this version is considered alpha and the generated
     topologies should be validated before being used in production
     simulations.
@@ -66,7 +47,12 @@ def print_note():
     ------------------------------------------------------------------------
     '''
 
-    print(note % version)
+    vinfo, msg = version_info()
+    if vinfo['online']:
+        print(note % (vinfo['local'], ' (latest available online version: %s)' % vinfo['online'].strip("'")))
+    else:
+        print(msg)
+        print(note % (vinfo['local'], ''))
 
 def main():
     print_note()
@@ -89,7 +75,7 @@ def main():
 
     # setup logging
     log_level = logging.DEBUG if args.v else logging.ERROR
-    lgr = _setup_logging(log_level)
+    lgr = setup_logging(log_level)
     lgr.debug('>> started main')
 
     # read the PSF file

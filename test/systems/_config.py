@@ -5,7 +5,8 @@
 # ===================================================================
 paths = {
     # 'gromacs': '/Users/Reza/Programs/gromacs/4.5.7/bin',
-    'gromacs': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
+    'gromacs_double': '/Users/Reza/Programs/gromacs/4.6.3/double/bin',
+    'gromacs_single': '/Users/Reza/Programs/gromacs/4.6.3/single/bin',
     'namd'   : '/Users/Reza/Workspace/Programs/namd/2.9',
     'psf2top': '/Users/Reza/Devel/pytopol/scripts/psf2top.py',
 }
@@ -22,28 +23,29 @@ paths = {
 # ===================================================================
 
 # the system ids that tests should be skipped for
-skip_systems = [
-    '001', #'002',
-    '003', '004', '005', '006', '007', '008', '009', '010',
+run_systems = [
+    # '001',
+    '002',
+    # '003', '004', '005', '006', '007', '008', '009', '010',
 
-    '101',    # popc memb
-    '102',    # dopc memb
+    # '101',    # popc memb
+    # '102',    # dopc memb
 
-    # '201',    # Lysozyme
-    # '301',    # cholestrol
+    '201',    # Lysozyme
+    '301',    # cholestrol
 
-    '401', '402', '403',
+    # '401', '402', '403',
 
-    '501',     # glucl
+    # '501',     # glucl
 
-    '601',      # gic
-    '602',      # vid : pr + chol + lipid
-    '603',      # vid : pr + chol
-    '604',      # vid : pr
-    '605',      # vid : chol + lipid
-    '606',      # vid : chol
-    '607',      # vid : lipid
-    '608',      # vid : one DOPC
+    # '601',      # gic
+    # '602',      # vid : pr + chol + lipid
+    # '603',      # vid : pr + chol
+    # '604',      # vid : pr
+    # '605',      # vid : chol + lipid
+    # '606',      # vid : chol
+    # '607',      # vid : lipid
+    # '608',      # vid : one DOPC
 ]
 
 systems = {

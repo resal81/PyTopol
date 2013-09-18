@@ -118,14 +118,22 @@ def run_psf2top(k, logfile):
 # ===================================================================
 # GROMACS
 # ===================================================================
-def run_gromacs(k, logfile):
+def run_gromacs(k, logfile, mode):
+    assert mode in ('single', 'double')
+    if mode == 'single':
+        grompp = '%s/grompp' % config.paths['gromacs_single']
+        mdrun  = '%s/mdrun' % config.paths['gromacs_single']
+    else:
+        grompp = '%s/grompp_d' % config.paths['gromacs_double']
+        mdrun  = '%s/mdrun_d' % config.paths['gromacs_double']
+
     top = 'top.top'
     pdb = config.systems[k]['pdb']
     mdp = config.gmx_mdp
     with open('mdp.mdp', 'w') as f:
         f.writelines([mdp])
 
-    command = ['%s/grompp' % config.paths['gromacs'],
+    command = [grompp,
                '-p', top,
                '-f', 'mdp.mdp',
                '-c', pdb,
@@ -135,7 +143,7 @@ def run_gromacs(k, logfile):
         print(status)
         return stdout, False
     else:
-        command = ['%s/mdrun' % config.paths['gromacs'],
+        command = [mdrun,
                    '-nt', '1',
                    '-s', 'topol.tpr',
                    '-rerun', pdb,
@@ -252,16 +260,14 @@ def main():
     maindir = os.getcwd()
 
     systems = config.systems
-    # from the _config file, get systems
     systems_keys = list(systems.keys())
     systems_keys.sort()
 
     print(' ')
 
-
     for k in systems_keys:
         # should we skip this test ?
-        if k in config.skip_systems:
+        if k not in config.run_systems:
             continue
 
         # if the output directory for the test `k` still exists, remove it
@@ -281,9 +287,10 @@ def main():
         os.mkdir(k)
         os.chdir(k)
 
+        # single precision ------------------------------------------
         # make gromacs folder
-        os.mkdir('gromacs')
-        os.chdir('gromacs')
+        os.mkdir('gromacs_single')
+        os.chdir('gromacs_single')
 
         # make the gromacs topology
         output, ok = run_psf2top(k, logfile)
@@ -292,13 +299,38 @@ def main():
             return
 
         # run gromacs
-        output, ok = run_gromacs(k, logfile)
+        output, ok = run_gromacs(k, logfile, mode='single')
         if not ok:
             print('An error occured when running gromacs... exiting.')
             return
         else:
             result = parse_gromacs_output()
-            systems[k]['gromacs_result'] = result
+            systems[k]['gromacs_single_result'] = result
+
+
+        # go one level up
+        os.chdir('..')
+
+
+        # double precision ------------------------------------------
+        # make gromacs folder
+        os.mkdir('gromacs_double')
+        os.chdir('gromacs_double')
+
+        # make the gromacs topology
+        output, ok = run_psf2top(k, logfile)
+        if not ok:
+            print('An error occured when using psf2top... exiting.')
+            return
+
+        # run gromacs
+        output, ok = run_gromacs(k, logfile, mode='double')
+        if not ok:
+            print('An error occured when running gromacs... exiting.')
+            return
+        else:
+            result = parse_gromacs_output()
+            systems[k]['gromacs_double_result'] = result
 
 
         # go one level up
@@ -350,42 +382,50 @@ def summarize_test_outputs(systems):
 
 
 
-    # very short summary -----------------------------
+    # short summary -----------------------------
     print('\n\n')
     desc = 'Table 1. Summary of the difference between GROMACS and NAMD energies (kcal/mol).'
     desc += ' Percentages are shown in the parantheses.'
     print(desc)
-    print('-' * 26 + '  ' + '-' * 12)
-    print('{:12s}  {:6s}  {:4s}  {:^12s}'.format(' ','natoms', 'ff', 'potential'))
+    print('-' * 26 + '  ' + '-' * 17 + '  ' + '-' * 17)
+    print('{:12s}  {:6s}  {:4s}  {:^12s}  {:^12s}'.format(' ','natoms', 'ff', 'GMX-NAMD (double)', 'GMX-NAMD (single)'))
 
-    print('-' * 26 + '  ' + '-' * 12)
+    print('-' * 26 + '  ' + '-' * 17 + '  ' + '-' * 17)
 
     for k in system_keys:
-        if k in config.skip_systems:
+        if k not in config.run_systems:
             continue
 
         sys = systems[k]
         potnamd = 0
-        potgmx  = 0
+        potgmx_double  = 0
+        potgmx_single  = 0
         s = '%12s  %6d  %4s  ' % (sys['name'], sys['natoms'], sys['ff'] )
         for m in ('bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'):
             namd = systems[k]['namd_result'][m]
-            gromacs = systems[k]['gromacs_result'][m]
+            gromacs_double = systems[k]['gromacs_double_result'][m]
+            gromacs_single = systems[k]['gromacs_single_result'][m]
 
             potnamd += namd
-            potgmx  += gromacs
+            potgmx_double  += gromacs_double
+            potgmx_single  += gromacs_single
 
-        diff = potgmx - potnamd
+        diff_double = potgmx_double - potnamd
+        diff_single = potgmx_single - potnamd
         if potnamd == 0:
-            diffp = '0.0'
+            pdiff_double = 'NA'
+            pdiff_single = 'NA'
         else:
-            diffp = abs(  ((potgmx-potnamd)/potnamd) * 100.0  )
-            diffp =  '%4.1f' % (diffp)
-        s += '%5.2f (%4s)  ' % (diff, diffp)
+            pdiff_double = abs(  ((potgmx_double-potnamd)/potnamd) * 100.0  )
+            pdiff_double =  '%5.2f' % (pdiff_double)
+
+            pdiff_single = abs(  ((potgmx_single-potnamd)/potnamd) * 100.0  )
+            pdiff_single =  '%5.2f' % (pdiff_single)
+
+        s += '{:6.3f} ({:4s} %)    {:6.3f} ({:4s} %)'.format(diff_double, pdiff_double, diff_single, pdiff_single)
 
         print(s)
-    print('-' * 26 + '  ' + '-' * 12)
-
+    print('-' * 26 + '  ' + '-' * 17 + '  ' + '-' * 17)
 
     print(' ')
 
@@ -394,28 +434,36 @@ def summarize_test_outputs(systems):
     print(desc)
 
     for k in system_keys:
-        if k in config.skip_systems:
+        if k not in config.run_systems:
             continue
 
         print('-' * 59)
         heading = '%s - %s \n' % (k, systems[k]['info'])
-        heading+= '{:10s}   {:>10s}   {:>10s}   {:>9s}  {:>9s}'.format(
-            '', 'NAMD', 'GROMACS', 'GMX-NAMD', '% |diff|')
+        heading+= '{:10s}   {:>10s}   {:>10s}   {:>9s}  {:>9s}   {:>10s}   {:>9s}  {:>9s}'.format(
+                     '',    'NAMD',   'GMX (double)', 'GMX-NAMD', '% |diff|', 'GMX (single)', 'GMX-NAMD', '% |diff|')
         print(heading)
 
         for m in ('bond', 'angle', 'dihedral', 'improper', 'coul', 'vdw'):
             namd = systems[k]['namd_result'][m]
-            gromacs = systems[k]['gromacs_result'][m]
 
-            diff =  gromacs - namd
+            gromacs_double = systems[k]['gromacs_double_result'][m]
+            gromacs_single = systems[k]['gromacs_single_result'][m]
+
+            diff_double =  gromacs_double - namd
+            diff_single =  gromacs_single - namd
 
             if namd == 0:
-                diffp = '0.000'
+                pdiff_double = 'NA'
+                pdiff_single = 'NA'
             else:
-                diffp = abs(  ((gromacs-namd)/namd) * 100.0  )
-                diffp =  '%5.3f' % (diffp)
+                pdiff_double = abs(  ((gromacs_double-namd)/namd) * 100.0  )
+                pdiff_double =  '%5.3f' % (pdiff_double)
 
-            result = '%10s   %10.2f   %10.2f   %9.4f  %9s' % (m, namd, gromacs, diff, diffp)
+                pdiff_single = abs(  ((gromacs_single-namd)/namd) * 100.0  )
+                pdiff_single =  '%5.3f' % (pdiff_single)
+
+            result = '%10s   %10.2f    %10.2f    %9.4f  %9s     %10.2f   %9.4f  %9s' % (
+                      m,      namd, gromacs_double, diff_double, pdiff_double, gromacs_single, diff_single, pdiff_single)
             print(result)
 
         print(' ')

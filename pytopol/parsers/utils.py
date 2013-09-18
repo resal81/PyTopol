@@ -39,8 +39,8 @@ def build_res_chain(m):
 
 def build_pairs(m):
     # using a molecule with bonds, angles and dihedrals, build pairs
-    print('building pairs with %d bonds, %d angles and %d dihedrals' % (
-        len(m.bonds), len(m.angles), len(m.dihedrals)))
+    # print('building pairs with %d bonds, %d angles and %d dihedrals' % (
+    #     len(m.bonds), len(m.angles), len(m.dihedrals)))
 
     _bonds = []
     for bond in m.bonds:
