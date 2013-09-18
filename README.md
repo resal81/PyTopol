@@ -45,9 +45,9 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
 ### psf2top.py
 
-**Table 1.** Summary of the difference between GROMACS 4.6.3 and NAMD 2.9 energies for topologies converted
-from `psf`. `potential` column represents the difference in total potential
-energies (kcal/mol) between GROMACS and NAMD. Percentages are shown in the parantheses.
+**Table 1.** Summary of the difference in potential energies (kcal/mol) between GROMACS 4.6.3 and NAMD 2.9 for
+selected topologies converted from `psf`.  Percentages are shown in the parantheses. Single and double correspond to
+the single and double-precision versions of GROMCAS.
 ```
 --------------------------  -----------------  -----------------
               natoms  ff    GMX(double)-NAMD   GMX(single)-NAMD
