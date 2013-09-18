@@ -46,7 +46,7 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
 #### psf2top.py
 
-**Table 1**. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol). Single and double correspond to the single and double-precision versions of GROMCAS.
+**Table 1**. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9. Single and double correspond to the single and double-precision versions of GROMCAS. Energies are in kcal/mol.
 
 ```
 --------------------------  -----------------  -----------------
