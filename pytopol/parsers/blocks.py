@@ -26,8 +26,14 @@ class Molecule(object):
         self.angles    = []
         self.dihedrals = []
         self.impropers = []
+
         self.cmaps     = []
         self.pairs     = []
+        self.exclusion_numb = None  # 0, 1, 2, ..
+        self.exclusion_list = []  # individual exclusion can be implemented as an bond or agngle term
+        self.settles    = []
+
+        self.name = None
 
         self._anumb_to_atom = {}
 

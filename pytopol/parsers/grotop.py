@@ -15,6 +15,7 @@ class GroTop(blocks.System):
             'nbfunc': None, 'comb-rule':None, 'gen-pairs':None, 'fudgeLJ':None, 'fudgeQQ':None,
         }
 
+
         self.molecules = []
         self._parse(fname)
         self.molecules = tuple(self.molecules)
@@ -26,83 +27,240 @@ class GroTop(blocks.System):
 
         known_sections = [
             'defaults',
-            'atomtypes', 'bondtypes', 'angletypes', 'dihedraltypes', 'nonbond_params', 'pairtypes', 'cmaptypes',
+            'atomtypes', 'bondtypes', 'angletypes', 'dihedraltypes',
+            'nonbond_params', 'pairtypes', 'cmaptypes', 'constrainttypes',
+
+            'implicit_genborn_params',
+
             'moleculetype',
-            'atoms', 'bonds', 'angles', 'dihedrals', 'pairs', 'cmap',
-            'system', 'molecules'
+            'atoms', 'bonds', 'angles', 'dihedrals', 'pairs', 'cmap', 'settles', 'exclusions',
+
+            'system', 'molecules',
         ]
 
 
-        self.molecules.append(blocks.Molecule())
+        mol = None
+        dict_molname_mol = {}
+
         self.forcefield = 'gromacs'
 
-        curr_mol_id = None
         curr_sec = None
 
         with open(fname) as f:
             for i_line, line in enumerate(f):
 
                 # trimming
+                if line[0] == '*':
+                    continue
                 if ';' in line:
                     line = line[0:line.index(';')]
-                elif '*' in line:
-                    line = line[0:line.index('*')]
                 line = line.strip()
+
                 if line == '':
                     continue
 
                 # is this a new section?
                 if line[0] == '[':
                     curr_sec = _find_section(line)
+                    # print(curr_sec)
                     if curr_sec not in known_sections:
                         print('Uknown section in topology: %s' % curr_sec)
                         curr_sec = None
                     continue
 
-                if curr_sec == 'atomtypes':
-                    pass
+
+                fields = line.split()
+
+                if curr_sec == 'defaults':
+                    # ; nbfunc        comb-rule       gen-pairs       fudgeLJ fudgeQQ
+                    #1               2               yes             0.5     0.8333
+                    assert len(fields) == 5
+                    self.defaults['nbfunc'] = fields[0]
+                    self.defaults['comb-rule'] = int(fields[1])
+                    self.defaults['gen-pairs'] = fields[2]
+                    self.defaults['fudgeLJ'] = float(fields[3])
+                    self.defaults['fudgeQQ'] = float(fields[4])
+
+                elif curr_sec == 'atomtypes':
+                    if len(fields) not in (7,8):
+                        print('skipping atomtype line with neither 7 or 8 fields: \n %s' % line)
+                        continue
+
+                    # ;name               at.num    mass         charge    ptype  sigma   epsilon
+                    # ; name  bond_type   at.num    mass         charge    ptype  sigma    epsilon
+
+                    shift = 0 if len(fields) == 7 else 1
+                    at = blocks.AtomType('gromacs')
+                    at.atype = fields[0]
+                    at.mass  = float(fields[2+shift])
+                    at.charge= float(fields[3+shift])
+                    sig = float(fields[5+shift])
+                    eps = float(fields[6+shift])
+                    at.gromacs= {'param': {'lje':eps, 'ljl':sig, 'lje14':None, 'ljl14':None} }
+
+
                 elif curr_sec == 'bondtypes':
-                    pass
+                    assert len(fields) == 5
+
                 elif curr_sec == 'angletypes':
-                    pass
+                    at1, at2, at3 = fields[:3]
+                    fu = int(fields[3])
+                    if fu == 1:
+                        assert len(fields) == 6
+                    elif fu == 5:
+                        assert len(fields) == 8
+
                 elif curr_sec == 'dihedraltypes':
-                    pass
+                    if len(fields) == 6:
+                        at1, at2 = fields[:2]
+                        fu = int(fields[2])
+
+                    else:
+                        at1, at2, at3, at4 = fields[:4]
+                        fu = int(fields[4])
+
+                        if fu == 2:
+                            assert len(fields) == 7
+
+                        elif fu == 3:
+                            assert len(fields) == 11
+
+                        elif fu == 4:
+                            assert len(fields) == 8
+
+                        elif fu == 9:
+                            assert len(fields) == 8
+
+
+
                 elif curr_sec == 'pairtypes':
                     pass
+
                 elif curr_sec == 'cmaptypes':
                     pass
+
                 elif curr_sec == 'nonbond_params':
                     pass
 
 
                 # extend system.molecules
-                if curr_sec == 'moleculetype':
-                    if curr_mol_id is None:
-                        curr_mol_id = 0
-                    else:
-                        self.molecules.append(blocks.Molecule)
-                        curr_mol_id += 1
+                elif curr_sec == 'moleculetype':
+                    assert len(fields) == 2
+
+                    mol = blocks.Molecule()
+
+                    mol.name, mol.exclusion_numb = fields[0], int(fields[1])
+
+                    dict_molname_mol[mol.name] = mol
+
 
                 elif curr_sec == 'atoms':
-                    pass
+                    #id    at_type     res_nr  residu_name at_name  cg_nr  charge   mass  typeB    chargeB      massB
+                    # 1       OC          1       OH          O1       1      -1.32
+                    aserial, atype, aname = int(fields[0]), fields[1], fields[4]
+                    resnumb, resname = int(fields[2]), fields[3]
+                    cgnr, charge = int(fields[5]), float(fields[6])
+                    rest = fields[7:]
+
+                    atom = blocks.Atom()
+                    atom.name = aname
+                    atom.number = aserial
+                    atom.resname = resname
+                    atom.resnumb = resnumb
+                    atom.charge  = charge
+
+                    if len(rest) >= 1:
+                        mass = float(rest[0])
+                        atom.mass = mass
+
+                    mol.atoms.append(atom)
+
                 elif curr_sec == 'bonds':
-                    pass
+                    an1, an2 = int(fields[0]), int(fields[1])
+                    fu = int(fields[2])
+                    rest = fields[3:]
+
+                    bond = blocks.Bond()
+                    bond.atom1 = mol.atoms[an1-1]
+                    bond.atom2 = mol.atoms[an2-1]
+
+                    mol.bonds.append(bond)
+
                 elif curr_sec == 'angles':
-                    pass
+                    an1, an2, an3 = int(fields[0]), int(fields[1]), int(fields[2])
+                    fu = int(fields[3])
+                    rest = fields[4:]
+
+                    ang = blocks.Angle()
+                    ang.atom1 = mol.atoms[an1-1]
+                    ang.atom2 = mol.atoms[an2-1]
+                    ang.atom3 = mol.atoms[an3-1]
+
+                    mol.angles.append(ang)
+
                 elif curr_sec == 'dihedrals':
-                    pass
+                    an1, an2, an3, an4 = int(fields[0]), int(fields[1]), int(fields[2]), int(fields[3])
+                    fu = int(fields[4])
+                    rest = fields[5:]
+
+                    if fu in (2,):  # improper
+                        dih = blocks.Dihedral()
+                        dih.atom1 = mol.atoms[an1-1]
+                        dih.atom2 = mol.atoms[an2-1]
+                        dih.atom3 = mol.atoms[an3-1]
+                        dih.atom4 = mol.atoms[an4-1]
+
+                        mol.dihedrals.append(dih)
+
+                    elif fu in (9,): # proper
+                        imp = blocks.Improper()
+                        imp.atom1 = mol.atoms[an1-1]
+                        imp.atom2 = mol.atoms[an2-1]
+                        imp.atom3 = mol.atoms[an3-1]
+                        imp.atom4 = mol.atoms[an4-1]
+
+                        mol.dihedrals.append(imp)
+
                 elif curr_sec == 'pairs':
-                    pass
+                    an1, an2 = int(fields[0]), int(fields[1])
+                    fu = int(fields[2])
+                    rest = fields[3:]
+
+                    pair = blocks.Pair()
+                    pair.atom1 = mol.atoms[an1-1]
+                    pair.atom2 = mol.atoms[an2-1]
+
+                    mol.pairs.append(pair)
+
                 elif curr_sec == 'cmap':
-                    pass
+                    an1, an2, an3, an4, an8 = int(fields[0]), int(fields[1]), int(fields[2]), int(fields[3]), int(fields[4])
+                    fu = int(fields[5])
+                    rest = fields[6:]
+
+                    cmap = blocks.CMap()
+                    cmap.atom1 = mol.atoms[an1-1]
+                    cmap.atom2 = mol.atoms[an2-1]
+                    cmap.atom3 = mol.atoms[an3-1]
+                    cmap.atom4 = mol.atoms[an4-1]
+                    cmap.atom8 = mol.atoms[an8-1]
+
+                    mol.cmaps.append(cmap)
+
+                elif curr_sec == 'settles':
+                    an1 = int(fields[0])
+                    fu = int(fields[1])
+                    rest = fields[2:]
+
                 elif curr_sec == 'system':
-                    pass
+                    assert len(fields) == 1
+                    self.name = fields[0]
+
                 elif curr_sec == 'molecules':
                     # if the number of a molecule is more than 1, add copies to system.molecules
-                    pass
-
-
-
+                    assert len(fields) == 2
+                    mname, nmol = fields[0], int(fields[1])
+                    for i in range(nmol):
+                        self.molecules.append(dict_molname_mol[mname])
 
 
 
@@ -519,6 +677,7 @@ class SystemToGroTop(object):
 if __name__ == '__main__':
     import sys
     grotop = GroTop(sys.argv[1])
+    print('%d molecules' % len(grotop.molecules))
 
 
 
