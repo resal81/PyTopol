@@ -384,8 +384,9 @@ def summarize_test_outputs(systems):
 
     # short summary -----------------------------
     print('\n\n')
-    desc = 'Table 1. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol).'
+    desc = 'Table 1. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9.'
     desc += ' Single and double correspond to the single and double-precision versions of GROMCAS.'
+    desc += ' Energies are in kcal/mol.'
     print(desc)
     print('-' * 26 + '  ' + '-' * 17 + '  ' + '-' * 17)
     print('{:12s}  {:6s}  {:4s}  {:^12s}  {:^12s}'.format(' ','natoms', 'ff', 'GMX-NAMD (double)', 'GMX-NAMD (single)'))
