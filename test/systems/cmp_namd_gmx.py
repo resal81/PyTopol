@@ -384,8 +384,8 @@ def summarize_test_outputs(systems):
 
     # short summary -----------------------------
     print('\n\n')
-    desc = 'Table 1. Summary of the difference between GROMACS and NAMD energies (kcal/mol).'
-    desc += ' Percentages are shown in the parantheses.'
+    desc = 'Table 1. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol).'
+    desc += ' Single and double correspond to the single and double-precision versions of GROMCAS.'
     print(desc)
     print('-' * 26 + '  ' + '-' * 17 + '  ' + '-' * 17)
     print('{:12s}  {:6s}  {:4s}  {:^12s}  {:^12s}'.format(' ','natoms', 'ff', 'GMX-NAMD (double)', 'GMX-NAMD (single)'))
@@ -406,23 +406,25 @@ def summarize_test_outputs(systems):
             gromacs_double = systems[k]['gromacs_double_result'][m]
             gromacs_single = systems[k]['gromacs_single_result'][m]
 
-            potnamd += namd
-            potgmx_double  += gromacs_double
-            potgmx_single  += gromacs_single
+            #potnamd += namd
+            potgmx_double  += (gromacs_double-namd)**2
+            potgmx_single  += (gromacs_single-namd)**2
 
-        diff_double = potgmx_double - potnamd
-        diff_single = potgmx_single - potnamd
+        diff_double = (potgmx_double / 6.)**0.5
+        diff_single = (potgmx_single / 6.)**0.5
         if potnamd == 0:
-            pdiff_double = 'NA'
-            pdiff_single = 'NA'
+            pdiff_double = ''
+            pdiff_single = ''
         else:
-            pdiff_double = abs(  ((potgmx_double-potnamd)/potnamd) * 100.0  )
-            pdiff_double =  '%5.2f' % (pdiff_double)
+            pdiff_double = ''
+            pdiff_single = ''
+            # pdiff_double = abs(  ((potgmx_double-potnamd)/potnamd) * 100.0  )
+            # pdiff_double =  '%5.2f' % (pdiff_double)
 
-            pdiff_single = abs(  ((potgmx_single-potnamd)/potnamd) * 100.0  )
-            pdiff_single =  '%5.2f' % (pdiff_single)
+            # pdiff_single = abs(  ((potgmx_single-potnamd)/potnamd) * 100.0  )
+            # pdiff_single =  '%5.2f' % (pdiff_single)
 
-        s += '{:6.3f} ({:4s} %)    {:6.3f} ({:4s} %)'.format(diff_double, pdiff_double, diff_single, pdiff_single)
+        s += '{:16.3f}    {:16.3f}'.format(diff_double, diff_single)
 
         print(s)
     print('-' * 26 + '  ' + '-' * 17 + '  ' + '-' * 17)

@@ -46,21 +46,18 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
 #### psf2top.py
 
-**Table 1.** Summary of the difference in potential energies (kcal/mol) between GROMACS 4.6.3 and NAMD 2.9 for
-selected topologies converted from `psf`.  Percentages of the differences are shown in the parantheses.
-Single and double correspond to
-the single and double-precision versions of GROMCAS. Potential eneriges were considered as the sum of bond, angle, dihedral,
-improper dihedral and nonbonding (LJ and coulombic) energies.
+**Table 1**. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol). Single and double correspond to the single and double-precision versions of GROMCAS.
+
 ```
 --------------------------  -----------------  -----------------
               natoms  ff    GMX-NAMD (double)  GMX-NAMD (single)
 --------------------------  -----------------  -----------------
-  AD peptide      22  CH27  -0.000 ( 0.00 %)    -0.000 ( 0.00 %)
-   POPC memb    9916  CH36  -0.001 ( 0.00 %)     0.063 ( 0.01 %)
-   DOPC memb   10488  CH36   0.021 ( 0.00 %)     0.006 ( 0.00 %)
-    Lysozyme    1966  CH27  -0.031 ( 0.00 %)    -0.028 ( 0.00 %)
- Cholesterol      74  CH36  -0.000 ( 0.00 %)    -0.000 ( 0.00 %)
- Pr+Chol+Lip   27562  CH36  -0.069 ( 0.00 %)    -0.906 ( 0.00 %)
+  AD peptide      22  CH27             0.000               0.000
+   POPC memb    9916  CH36             0.002               0.021
+   DOPC memb   10488  CH36             0.005               0.014
+    Lysozyme    1966  CH27             0.009               0.010
+ Cholesterol      74  CH36             0.000               0.000
+ Pr+Chol+Lip   27562  CH36             0.046               3.988
 --------------------------  -----------------  -----------------
 ```
 For the detailed results, please see [here](https://github.com/resal81/PyTopol/wiki/psf2top-Tests).
