@@ -1,12 +1,109 @@
 
 
 import logging
+from pytopol.parsers import blocks
 
 module_logger = logging.getLogger('mainapp.grotop')
 
 
-class GroTop:
-    pass
+class GroTop(blocks.System):
+    def __init__(self, fname):
+        self.lgr = logging.getLogger('mainapp.grotop.GroTop')
+        self.fname = fname
+
+        self.defaults = {
+            'nbfunc': None, 'comb-rule':None, 'gen-pairs':None, 'fudgeLJ':None, 'fudgeQQ':None,
+        }
+
+        self.molecules = []
+        self._parse(fname)
+        self.molecules = tuple(self.molecules)
+
+    def _parse(self, fname):
+
+        def _find_section(line):
+            return line.strip('[').strip(']').strip()
+
+        known_sections = [
+            'defaults',
+            'atomtypes', 'bondtypes', 'angletypes', 'dihedraltypes', 'nonbond_params', 'pairtypes', 'cmaptypes',
+            'moleculetype',
+            'atoms', 'bonds', 'angles', 'dihedrals', 'pairs', 'cmap',
+            'system', 'molecules'
+        ]
+
+
+        self.molecules.append(blocks.Molecule())
+        self.forcefield = 'gromacs'
+
+        curr_mol_id = None
+        curr_sec = None
+
+        with open(fname) as f:
+            for i_line, line in enumerate(f):
+
+                # trimming
+                if ';' in line:
+                    line = line[0:line.index(';')]
+                elif '*' in line:
+                    line = line[0:line.index('*')]
+                line = line.strip()
+                if line == '':
+                    continue
+
+                # is this a new section?
+                if line[0] == '[':
+                    curr_sec = _find_section(line)
+                    if curr_sec not in known_sections:
+                        print('Uknown section in topology: %s' % curr_sec)
+                        curr_sec = None
+                    continue
+
+                if curr_sec == 'atomtypes':
+                    pass
+                elif curr_sec == 'bondtypes':
+                    pass
+                elif curr_sec == 'angletypes':
+                    pass
+                elif curr_sec == 'dihedraltypes':
+                    pass
+                elif curr_sec == 'pairtypes':
+                    pass
+                elif curr_sec == 'cmaptypes':
+                    pass
+                elif curr_sec == 'nonbond_params':
+                    pass
+
+
+                # extend system.molecules
+                if curr_sec == 'moleculetype':
+                    if curr_mol_id is None:
+                        curr_mol_id = 0
+                    else:
+                        self.molecules.append(blocks.Molecule)
+                        curr_mol_id += 1
+
+                elif curr_sec == 'atoms':
+                    pass
+                elif curr_sec == 'bonds':
+                    pass
+                elif curr_sec == 'angles':
+                    pass
+                elif curr_sec == 'dihedrals':
+                    pass
+                elif curr_sec == 'pairs':
+                    pass
+                elif curr_sec == 'cmap':
+                    pass
+                elif curr_sec == 'system':
+                    pass
+                elif curr_sec == 'molecules':
+                    # if the number of a molecule is more than 1, add copies to system.molecules
+                    pass
+
+
+
+
 
 
 class SystemToGroTop(object):
@@ -419,8 +516,9 @@ class SystemToGroTop(object):
 
 
 
-
-
+if __name__ == '__main__':
+    import sys
+    grotop = GroTop(sys.argv[1])
 
 
 
