@@ -303,7 +303,7 @@ class BondType(Param):
         self.atype2 = None
 
         self.charmm = {'param': {'kb':None, 'b0':None} }
-        self.gromacs= {'param': {}, 'func':None}
+        self.gromacs= {'param': {'kb':None, 'b0':None}, 'func':None}
 
 
 class AngleType(Param):
@@ -316,7 +316,7 @@ class AngleType(Param):
         self.atype3 = None
 
         self.charmm = {'param':{'ktetha':None, 'tetha0':None, 'kub':None, 's0':None} }
-        self.gromacs= {'param':{}}
+        self.gromacs= {'param':{'ktetha':None, 'tetha0':None, 'kub':None, 's0':None}, 'func':None}
 
 
 class DihedralType(Param):
@@ -343,8 +343,8 @@ class ImproperType(Param):
         self.atype3 = None
         self.atype4 = None
 
-        self.charmm = {'param': {'kpsi': None, 'psi0':None} }
-        self.gromacs= {'param':{}, 'func':None}
+        self.charmm = {'param':{'kpsi': None, 'psi0':None} }
+        self.gromacs= {'param':{'kpsi': None, 'psi0':None}, 'func':None}
 
 
 class CMapType(Param):

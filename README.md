@@ -40,9 +40,9 @@ PyTopol is licensed under [GNU GPLv3](http://www.gnu.org/licenses/gpl.html).
 
 
 #### PSF to GROMACS topology conversion
-[Notes about using psf2top.py](https://github.com/resal81/PyTopol/wiki/psf2top-Usage)
+[How to use psf2top.py](https://github.com/resal81/PyTopol/wiki/psf2top-Usage)
 
-**Table 1**. Summary of the rmsd of potential terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol). Single and double correspond to the single and double-precision versions of GROMCAS.
+**Table 1**. Summary of the rmsd of potential energy terms between GROMACS 4.6.3 and NAMD 2.9 (kcal/mol). Single and double correspond to the single and double-precision versions of GROMCAS.
 
 ```
 --------------------------  -----------------  -----------------

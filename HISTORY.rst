@@ -22,7 +22,7 @@ History
 0.1.3 (2013-09-16)
 ++++++++++++++++++
 
-* The conversion part wa rewritten to make it more flexible.
+* The conversion part was rewritten to make it more flexible.
 * Cholestrol test is now passed.
 
 

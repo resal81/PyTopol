@@ -25,33 +25,18 @@ class GroTop(blocks.System):
         def _find_section(line):
             return line.strip('[').strip(']').strip()
 
-        known_sections = [
-            'defaults',
-            'atomtypes', 'bondtypes', 'angletypes', 'dihedraltypes',
-            'nonbond_params', 'pairtypes', 'cmaptypes', 'constrainttypes',
-
-            'implicit_genborn_params',
-
-            'moleculetype',
-            'atoms', 'bonds', 'angles', 'dihedrals', 'pairs', 'cmap', 'settles', 'exclusions',
-
-            'system', 'molecules',
-        ]
-
-
         mol = None
         dict_molname_mol = {}
 
         self.forcefield = 'gromacs'
 
         curr_sec = None
+        cmap_lines = []
 
         with open(fname) as f:
             for i_line, line in enumerate(f):
 
                 # trimming
-                if line[0] == '*':
-                    continue
                 if ';' in line:
                     line = line[0:line.index(';')]
                 line = line.strip()
@@ -59,13 +44,12 @@ class GroTop(blocks.System):
                 if line == '':
                     continue
 
+                if line[0] == '*':
+                    continue
+
                 # is this a new section?
                 if line[0] == '[':
                     curr_sec = _find_section(line)
-                    # print(curr_sec)
-                    if curr_sec not in known_sections:
-                        print('Uknown section in topology: %s' % curr_sec)
-                        curr_sec = None
                     continue
 
 
@@ -94,53 +78,26 @@ class GroTop(blocks.System):
                     at.atype = fields[0]
                     at.mass  = float(fields[2+shift])
                     at.charge= float(fields[3+shift])
+
+                    particletype = fields[4+shift]
+                    assert particletype in ('A', 'S', 'V', 'D')
+
+                    if particletype not in ('A',):
+                        print('warning: not-atom particletype: "%s"' % line)
+
                     sig = float(fields[5+shift])
                     eps = float(fields[6+shift])
                     at.gromacs= {'param': {'lje':eps, 'ljl':sig, 'lje14':None, 'ljl14':None} }
 
 
-                elif curr_sec == 'bondtypes':
+                elif curr_sec == 'pairtypes':
                     assert len(fields) == 5
 
-                elif curr_sec == 'angletypes':
-                    at1, at2, at3 = fields[:3]
-                    fu = int(fields[3])
-                    if fu == 1:
-                        assert len(fields) == 6
-                    elif fu == 5:
-                        assert len(fields) == 8
-
-                elif curr_sec == 'dihedraltypes':
-                    if len(fields) == 6:
-                        at1, at2 = fields[:2]
-                        fu = int(fields[2])
-
-                    else:
-                        at1, at2, at3, at4 = fields[:4]
-                        fu = int(fields[4])
-
-                        if fu == 2:
-                            assert len(fields) == 7
-
-                        elif fu == 3:
-                            assert len(fields) == 11
-
-                        elif fu == 4:
-                            assert len(fields) == 8
-
-                        elif fu == 9:
-                            assert len(fields) == 8
-
-
-
-                elif curr_sec == 'pairtypes':
-                    pass
-
-                elif curr_sec == 'cmaptypes':
-                    pass
-
                 elif curr_sec == 'nonbond_params':
-                    pass
+                    assert len(fields) == 5
+                    at1, at2 = fields[0], fields[1]
+                    fu = int(fields[2])
+                    assert fu in (1,2)   # 2 for buckingham
 
 
                 # extend system.molecules
@@ -175,81 +132,140 @@ class GroTop(blocks.System):
 
                     mol.atoms.append(atom)
 
-                elif curr_sec == 'bonds':
-                    an1, an2 = int(fields[0]), int(fields[1])
+                elif curr_sec in ('pairtypes', 'pairs', 'pairs_nb'):
+                    ai, aj = fields[:2]
                     fu = int(fields[2])
-                    rest = fields[3:]
+                    assert fu in (1,2)
 
-                    bond = blocks.Bond()
-                    bond.atom1 = mol.atoms[an1-1]
-                    bond.atom2 = mol.atoms[an2-1]
+                    if fu not in (1,):
+                        raise NotImplementedError('function %d is not supported' % fu)
+                    # an1, an2 = int(fields[0]), int(fields[1])
+                    # fu = int(fields[2])
+                    # rest = fields[3:]
 
-                    mol.bonds.append(bond)
+                    # pair = blocks.Pair()
+                    # pair.atom1 = mol.atoms[an1-1]
+                    # pair.atom2 = mol.atoms[an2-1]
 
-                elif curr_sec == 'angles':
-                    an1, an2, an3 = int(fields[0]), int(fields[1]), int(fields[2])
+                    # mol.pairs.append(pair)
+
+                elif curr_sec in ('bondtypes', 'bonds'):
+                    ai, aj = fields[:2]
+                    fu = int(fields[2])
+                    assert fu in (1,2,3,4,5,6,7,8,9,10)
+
+                    if fu != 1:
+                        raise NotImplementedError('function %d is not supported' % fu)
+
+                #     assert len(fields) == 5
+                #     bt = blocks.BondType('gromacs')
+                #     bt.atype1 = fields[0]
+                #     bt.atype2 = fields[1]
+                #     fu = int(fields[2])
+                #     b0 = float(fields[3])
+                #     kb = float(fields[4])
+                #     bt.gromacs = {'param':{'kb':kb, 'b0':b0}, 'func':fu}
+
+                # elif curr_sec == 'bonds':
+                #     an1, an2 = int(fields[0]), int(fields[1])
+                #     fu = int(fields[2])
+                #     rest = fields[3:]
+
+                #     bond = blocks.Bond()
+                #     bond.atom1 = mol.atoms[an1-1]
+                #     bond.atom2 = mol.atoms[an2-1]
+
+                #     mol.bonds.append(bond)
+
+
+
+                elif curr_sec in ('angletypes', 'angles'):
+                    ai, aj , ak = fields[:3]
                     fu = int(fields[3])
-                    rest = fields[4:]
+                    assert fu in (1,2,3,4,5,6,8)  # no 7
 
-                    ang = blocks.Angle()
-                    ang.atom1 = mol.atoms[an1-1]
-                    ang.atom2 = mol.atoms[an2-1]
-                    ang.atom3 = mol.atoms[an3-1]
+                    if fu not in (1,5):
+                        raise NotImplementedError('function %d is not supported' % fu)
 
-                    mol.angles.append(ang)
+                    # at1, at2, at3 = fields[:3]
+                    # fu = int(fields[3])
+                    # if fu == 1:
+                    #     assert len(fields) == 6
+                    #     theta0 = float(fields[4])
+                    #     ktheta = float(fields[5])
+                    #     ang = blocks.AngleType('gromacs')
+                    #     ang.atype1 = at1
+                    #     ang.atype2 = at2
+                    #     ang.atype3 = at3
+                    #     ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
+                    # elif fu == 5:
+                    #     assert len(fields) == 8
+                    #     theta0 = float(fields[4])
+                    #     ktheta = float(fields[5])
+                    #     s0  = float(fields[6])
+                    #     kub = float(fields[7])
+                    #     ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':kub, 's0':s0}, 'func':fu}
 
-                elif curr_sec == 'dihedrals':
-                    an1, an2, an3, an4 = int(fields[0]), int(fields[1]), int(fields[2]), int(fields[3])
+                    # an1, an2, an3 = int(fields[0]), int(fields[1]), int(fields[2])
+                    # fu = int(fields[3])
+                    # rest = fields[4:]
+
+                    # ang = blocks.Angle()
+                    # ang.atom1 = mol.atoms[an1-1]
+                    # ang.atom2 = mol.atoms[an2-1]
+                    # ang.atom3 = mol.atoms[an3-1]
+
+                    # mol.angles.append(ang)
+
+                elif curr_sec in  ('dihedraltypes', 'dihedrals'):
+                    if curr_sec == 'dihedraltypes' and len(fields) == 6:
+                        # in oplsaa - quartz parameters
+                        fields.insert(2, 'X')
+                        fields.insert(0, 'X')
+                    ai, aj, ak, am = fields[:4]
                     fu = int(fields[4])
-                    rest = fields[5:]
+                    assert fu in (1,2,3,4,5,8,9)
 
-                    if fu in (2,):  # improper
-                        dih = blocks.Dihedral()
-                        dih.atom1 = mol.atoms[an1-1]
-                        dih.atom2 = mol.atoms[an2-1]
-                        dih.atom3 = mol.atoms[an3-1]
-                        dih.atom4 = mol.atoms[an4-1]
+                    if fu not in (1,2,3,4,9):
+                        raise NotImplementedError('function %d is not supported' % fu)
 
-                        mol.dihedrals.append(dih)
 
-                    elif fu in (9,): # proper
-                        imp = blocks.Improper()
-                        imp.atom1 = mol.atoms[an1-1]
-                        imp.atom2 = mol.atoms[an2-1]
-                        imp.atom3 = mol.atoms[an3-1]
-                        imp.atom4 = mol.atoms[an4-1]
 
-                        mol.dihedrals.append(imp)
+                elif curr_sec in ('cmaptypes', 'cmap'):
+                    pass
+                    # an1, an2, an3, an4, an8 = int(fields[0]), int(fields[1]), int(fields[2]), int(fields[3]), int(fields[4])
+                    # fu = int(fields[5])
+                    # rest = fields[6:]
 
-                elif curr_sec == 'pairs':
-                    an1, an2 = int(fields[0]), int(fields[1])
-                    fu = int(fields[2])
-                    rest = fields[3:]
+                    # cmap = blocks.CMap()
+                    # cmap.atom1 = mol.atoms[an1-1]
+                    # cmap.atom2 = mol.atoms[an2-1]
+                    # cmap.atom3 = mol.atoms[an3-1]
+                    # cmap.atom4 = mol.atoms[an4-1]
+                    # cmap.atom8 = mol.atoms[an8-1]
 
-                    pair = blocks.Pair()
-                    pair.atom1 = mol.atoms[an1-1]
-                    pair.atom2 = mol.atoms[an2-1]
-
-                    mol.pairs.append(pair)
-
-                elif curr_sec == 'cmap':
-                    an1, an2, an3, an4, an8 = int(fields[0]), int(fields[1]), int(fields[2]), int(fields[3]), int(fields[4])
-                    fu = int(fields[5])
-                    rest = fields[6:]
-
-                    cmap = blocks.CMap()
-                    cmap.atom1 = mol.atoms[an1-1]
-                    cmap.atom2 = mol.atoms[an2-1]
-                    cmap.atom3 = mol.atoms[an3-1]
-                    cmap.atom4 = mol.atoms[an4-1]
-                    cmap.atom8 = mol.atoms[an8-1]
-
-                    mol.cmaps.append(cmap)
+                    # mol.cmaps.append(cmap)
 
                 elif curr_sec == 'settles':
-                    an1 = int(fields[0])
+                    assert len(fields) == 4
+                    ai = fields[0]
                     fu = int(fields[1])
-                    rest = fields[2:]
+                    assert fu == 1
+
+                elif curr_sec in ('exclusions',):
+                    ai = fields[0]
+
+                elif curr_sec in ('constrainttypes', 'constraints'):
+                    ai, aj = fields[:2]
+                    fu = int(fields[2])
+                    assert fu in (1,2)
+
+                elif curr_sec in ('position_restraints', 'distance_restraints', 'dihedral_restraints',
+                                  'orientation_restraints', 'angle_restraints', 'angle_restraints_z'):
+                    pass
+
+                elif curr_sec in ('implicit_genborn_params',):
+                    pass
 
                 elif curr_sec == 'system':
                     assert len(fields) == 1
@@ -261,6 +277,9 @@ class GroTop(blocks.System):
                     mname, nmol = fields[0], int(fields[1])
                     for i in range(nmol):
                         self.molecules.append(dict_molname_mol[mname])
+
+                else:
+                    print('Uknown section in topology: %s' % curr_sec)
 
 
 
