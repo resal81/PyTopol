@@ -207,15 +207,16 @@ class Param:
             if reqformat == 'gromacs' and self.format == 'charmm':
                 for imp in self.charmm['param']:
                     convimp = {}
-                    convimp['kpsi']  = imp['kpsi'] * 4.184
-                    convimp['delta'] = imp['delta']
-                    convimp['n']     = imp['n']
+                    convimp['kpsi']  = imp['kpsi'] * 2 * 4.184
+                    convimp['psi0']  = imp['psi0']
+                    if imp.get('n', False):
+                        convimp['n']     = imp['n']
                     self.gromacs['param'].append(convimp)
-                self.gromacs['func'] = 9
-
-                self.gromacs['param']['kpsi'] = self.charmm['param']['kpsi'] * 2 * 4.184
-                self.gromacs['param']['psi0'] = self.charmm['param']['psi0']
                 self.gromacs['func'] = 2
+
+                # self.gromacs['param']['kpsi'] = self.charmm['param']['kpsi'] * 2 * 4.184
+                # self.gromacs['param']['psi0'] = self.charmm['param']['psi0']
+                # self.gromacs['func'] = 2
             else:
                 raise NotImplementedError
 
@@ -324,8 +325,10 @@ class ImproperType(Param):
         self.atype3 = None
         self.atype4 = None
 
-        self.charmm = {'param':{'kpsi': None, 'psi0':None} }
-        self.gromacs= {'param':{'kpsi': None, 'psi0':None}, 'func':None}
+        self.charmm = {'param':[]}
+        self.gromacs= {'param':[], 'func': None}
+        # self.charmm = {'param':{'kpsi': None, 'psi0':None} }
+        # self.gromacs= {'param':{'kpsi': None, 'psi0':None}, 'func':None}
 
 
 class CMapType(Param):

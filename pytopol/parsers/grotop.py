@@ -682,14 +682,17 @@ class SystemToGroTop(object):
             at2 = imp.atype2
             at3 = imp.atype3
             at4 = imp.atype4
+
             imp.convert('gromacs')
-
-            kpsi = imp.gromacs['param']['kpsi']
-            psi0 = imp.gromacs['param']['psi0']
-
             fu = imp.gromacs['func']
-            line = self.formats['impropertypes'].format(at1, at2, at3, at4, fu, psi0, kpsi)
-            result.append(line)
+
+            for ipar in imp.gromacs['param']:
+
+                kpsi = ipar['kpsi']
+                psi0 = ipar['psi0']
+
+                line = self.formats['impropertypes'].format(at1, at2, at3, at4, fu, psi0, kpsi)
+                result.append(line)
 
         return result
 

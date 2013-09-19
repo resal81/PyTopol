@@ -444,8 +444,14 @@ class CharmmPar(object):
                 newimp.atype3 = at3
                 newimp.atype4 = at4
 
-                newimp.charmm['param']['kpsi'] = kpsi
-                newimp.charmm['param']['psi0'] = psi0
+                # newimp.charmm['param']['kpsi'] = kpsi
+                # newimp.charmm['param']['psi0'] = psi0
+
+                m = {}
+                m['kpsi'] = kpsi
+                m['psi0'] = psi0
+
+                newimp.charmm['param'].append(m)
 
                 system.impropertypes.append(newimp)
 
