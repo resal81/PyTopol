@@ -8,6 +8,9 @@ module_logger = logging.getLogger('mainapp.grotop')
 
 class GroTop(blocks.System):
     def __init__(self, fname):
+
+        super(GroTop, self).__init__()
+
         self.lgr = logging.getLogger('mainapp.grotop.GroTop')
         self.fname = fname
 
@@ -47,11 +50,13 @@ class GroTop(blocks.System):
                 if line[0] == '*':
                     continue
 
+                if line.startswith('#include'):
+                    raise ValueError
+
                 # is this a new section?
                 if line[0] == '[':
                     curr_sec = _find_section(line)
                     continue
-
 
                 fields = line.split()
 
@@ -90,16 +95,6 @@ class GroTop(blocks.System):
                     at.gromacs= {'param': {'lje':eps, 'ljl':sig, 'lje14':None, 'ljl14':None} }
 
 
-                elif curr_sec == 'pairtypes':
-                    assert len(fields) == 5
-
-                elif curr_sec == 'nonbond_params':
-                    assert len(fields) == 5
-                    at1, at2 = fields[0], fields[1]
-                    fu = int(fields[2])
-                    assert fu in (1,2)   # 2 for buckingham
-
-
                 # extend system.molecules
                 elif curr_sec == 'moleculetype':
                     assert len(fields) == 2
@@ -133,23 +128,55 @@ class GroTop(blocks.System):
                     mol.atoms.append(atom)
 
                 elif curr_sec in ('pairtypes', 'pairs', 'pairs_nb'):
+                    '''
+                    section     #at     fu      #param
+                    ---------------------------------
+                    pairs       2       1       V,W
+                    pairs       2       2       fudgeQQ, qi, qj, V, W
+                    pairs_nb    2       1       qi, qj, V, W
+
+                    '''
+
                     ai, aj = fields[:2]
                     fu = int(fields[2])
                     assert fu in (1,2)
 
-                    if fu not in (1,):
-                        raise NotImplementedError('function %d is not supported' % fu)
-                    # an1, an2 = int(fields[0]), int(fields[1])
-                    # fu = int(fields[2])
-                    # rest = fields[3:]
+                    pair = blocks.InteractionType('gromacs')
+                    if curr_sec=='pairtypes' and fu==1:
+                        pair.atype1 = ai
+                        pair.atype2 = aj
+                        v, w = list(map(float, fields[3:5]))
+                        pair.gromacs = {'param': {'lje':None, 'ljl':None, 'lje14':w, 'ljl14':v}, 'func':fu }
 
-                    # pair = blocks.Pair()
-                    # pair.atom1 = mol.atoms[an1-1]
-                    # pair.atom2 = mol.atoms[an2-1]
+                        self.pairtypes.append(pair)
 
-                    # mol.pairs.append(pair)
+                    elif curr_sec == 'pairs' and fu==1:
+                        ai, aj = list( map(int, [ai,aj]) )
+                        pair.atom1 = mol.atoms[ai-1]
+                        pair.atom2 = mol.atoms[aj-1]
+
+                        mol.pairs.append(pair)
+
+                    else:
+                        raise NotImplementedError('%s with functiontype %d is not supported' % (curr_sec,fu))
+
 
                 elif curr_sec in ('bondtypes', 'bonds'):
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    bonds       2       1       2
+                    bonds       2       2       2
+                    bonds       2       3       3
+                    bonds       2       4       2
+                    bonds       2       5       ??
+                    bonds       2       6       2
+                    bonds       2       7       2
+                    bonds       2       8       ??
+                    bonds       2       9       ??
+                    bonds       2       10      4
+                    '''
+
                     ai, aj = fields[:2]
                     fu = int(fields[2])
                     assert fu in (1,2,3,4,5,6,7,8,9,10)
@@ -157,29 +184,39 @@ class GroTop(blocks.System):
                     if fu != 1:
                         raise NotImplementedError('function %d is not supported' % fu)
 
-                #     assert len(fields) == 5
-                #     bt = blocks.BondType('gromacs')
-                #     bt.atype1 = fields[0]
-                #     bt.atype2 = fields[1]
-                #     fu = int(fields[2])
-                #     b0 = float(fields[3])
-                #     kb = float(fields[4])
-                #     bt.gromacs = {'param':{'kb':kb, 'b0':b0}, 'func':fu}
+                    bond = blocks.BondType('gromacs')
 
-                # elif curr_sec == 'bonds':
-                #     an1, an2 = int(fields[0]), int(fields[1])
-                #     fu = int(fields[2])
-                #     rest = fields[3:]
+                    if fu == 1:
+                        if curr_sec == 'bondtypes':
+                            bond.atype1 = ai
+                            bond.atype2 = aj
+                            b0, kb = list(map(float, fields[3:5]))
 
-                #     bond = blocks.Bond()
-                #     bond.atom1 = mol.atoms[an1-1]
-                #     bond.atom2 = mol.atoms[an2-1]
+                            bond.gromacs = {'param':{'kb':kb, 'b0':b0}, 'func':fu}
 
-                #     mol.bonds.append(bond)
+                        elif curr_sec == 'bonds':
+                            ai, aj = list(map(int, [ai, aj]))
+                            bond.atom1 = mol.atoms[ai-1]
+                            bond.atom2 = mol.atoms[aj-1]
 
+                            mol.bonds.append(bond)
 
+                    else:
+                        raise NotImplementedError
 
                 elif curr_sec in ('angletypes', 'angles'):
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    angles      3       1       2
+                    angles      3       2       2
+                    angles      3       3       3
+                    angles      3       4       4
+                    angles      3       5       4
+                    angles      3       6       6
+                    angles      3       8       ??
+                    '''
+
                     ai, aj , ak = fields[:3]
                     fu = int(fields[3])
                     assert fu in (1,2,3,4,5,6,8)  # no 7
@@ -187,41 +224,73 @@ class GroTop(blocks.System):
                     if fu not in (1,5):
                         raise NotImplementedError('function %d is not supported' % fu)
 
-                    # at1, at2, at3 = fields[:3]
-                    # fu = int(fields[3])
-                    # if fu == 1:
-                    #     assert len(fields) == 6
-                    #     theta0 = float(fields[4])
-                    #     ktheta = float(fields[5])
-                    #     ang = blocks.AngleType('gromacs')
-                    #     ang.atype1 = at1
-                    #     ang.atype2 = at2
-                    #     ang.atype3 = at3
-                    #     ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
-                    # elif fu == 5:
-                    #     assert len(fields) == 8
-                    #     theta0 = float(fields[4])
-                    #     ktheta = float(fields[5])
-                    #     s0  = float(fields[6])
-                    #     kub = float(fields[7])
-                    #     ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':kub, 's0':s0}, 'func':fu}
+                    ang = blocks.AngleType('gromacs')
+                    if fu == 1:
+                        if curr_sec == 'angletypes':
+                            ang.atype1 = ai
+                            ang.atype2 = aj
+                            ang.atype3 = ak
+                            tetha0, ktetha = list(map(float, fields[4:6]))
 
-                    # an1, an2, an3 = int(fields[0]), int(fields[1]), int(fields[2])
-                    # fu = int(fields[3])
-                    # rest = fields[4:]
+                            ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
 
-                    # ang = blocks.Angle()
-                    # ang.atom1 = mol.atoms[an1-1]
-                    # ang.atom2 = mol.atoms[an2-1]
-                    # ang.atom3 = mol.atoms[an3-1]
+                            self.angletypes.append(ang)
 
-                    # mol.angles.append(ang)
+                        elif curr_sec == 'angles':
+                            ai, aj, ak = list(map(int, [ai, aj, ak]))
+                            ang.atom1 = mol.atoms[ai-1]
+                            ang.atom2 = mol.atoms[aj-1]
+                            ang.atom3 = mol.atoms[ak-1]
+
+                            mol.angles.append(ang)
+
+                        else:
+                            raise ValueError
+
+                    elif fu == 5:
+                        if curr_sec == 'angletypes':
+                            ang.atype1 = ai
+                            ang.atype2 = aj
+                            ang.atype3 = ak
+                            tetha0, ktetha, s0, kub = list(map(float, fields[4:8]))
+
+                            ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':kub, 's0':s0}, 'func':fu}
+
+                            self.angletypes.append(ang)
+
+                        elif curr_sec == 'angles':
+                            ai, aj, ak = list(map(int, [ai, aj, ak]))
+                            ang.atom1 = mol.atoms[ai-1]
+                            ang.atom2 = mol.atoms[aj-1]
+                            ang.atom3 = mol.atoms[ak-1]
+
+                            mol.angles.append(ang)
+
+                        else:
+                            raise ValueError
+
+                    else:
+                        raise NotImplementedError
+
 
                 elif curr_sec in  ('dihedraltypes', 'dihedrals'):
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    dihedrals   4       1       3
+                    dihedrals   4       2       2
+                    dihedrals   4       3       6
+                    dihedrals   4       4       3
+                    dihedrals   4       5       4
+                    dihedrals   4       8       ??
+                    dihedrals   4       9       3
+                    '''
+
                     if curr_sec == 'dihedraltypes' and len(fields) == 6:
                         # in oplsaa - quartz parameters
                         fields.insert(2, 'X')
                         fields.insert(0, 'X')
+
                     ai, aj, ak, am = fields[:4]
                     fu = int(fields[4])
                     assert fu in (1,2,3,4,5,8,9)
@@ -229,7 +298,25 @@ class GroTop(blocks.System):
                     if fu not in (1,2,3,4,9):
                         raise NotImplementedError('function %d is not supported' % fu)
 
-
+                    dih = blocks.DihedralType('gromacs')
+                    imp = blocks.ImproperType('gromacs')
+                    if fu == 1:
+                        if curr_sec == 'dihedraltypes':
+                            pass
+                        elif curr_sec == 'dihedrals':
+                            pass
+                        else:
+                            raise ValueError
+                    elif fu == 2:
+                        pass
+                    elif fu == 3:
+                        pass
+                    elif fu == 4:
+                        pass
+                    elif fu == 9:
+                        pass
+                    else:
+                        raise NotImplementedError
 
                 elif curr_sec in ('cmaptypes', 'cmap'):
                     pass
@@ -247,15 +334,30 @@ class GroTop(blocks.System):
                     # mol.cmaps.append(cmap)
 
                 elif curr_sec == 'settles':
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    '''
+
                     assert len(fields) == 4
                     ai = fields[0]
                     fu = int(fields[1])
                     assert fu == 1
 
                 elif curr_sec in ('exclusions',):
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    '''
+
                     ai = fields[0]
 
                 elif curr_sec in ('constrainttypes', 'constraints'):
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    '''
+
                     ai, aj = fields[:2]
                     fu = int(fields[2])
                     assert fu in (1,2)
@@ -265,13 +367,28 @@ class GroTop(blocks.System):
                     pass
 
                 elif curr_sec in ('implicit_genborn_params',):
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    '''
+
                     pass
 
                 elif curr_sec == 'system':
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    '''
+
                     assert len(fields) == 1
                     self.name = fields[0]
 
                 elif curr_sec == 'molecules':
+                    '''
+                    section     #at     fu      #param
+                    ----------------------------------
+                    '''
+
                     # if the number of a molecule is more than 1, add copies to system.molecules
                     assert len(fields) == 2
                     mname, nmol = fields[0], int(fields[1])

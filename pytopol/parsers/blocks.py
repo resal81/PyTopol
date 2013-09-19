@@ -11,6 +11,7 @@ class System(object):
         self.impropertypes    = []
         self.cmaptypes        = []
         self.interactiontypes = []
+        self.pairtypes        = []
         self.forcefield=  None
 
 
@@ -136,50 +137,6 @@ class Atom(object):
             return False
 
 
-
-class Bond:
-    def __init__(self):
-        self.atom1 = None
-        self.atom2 = None
-
-class Angle:
-    def __init__(self):
-        self.atom1 = None
-        self.atom2 = None
-        self.atom3 = None
-
-class Dihedral:
-    def __init__(self):
-        self.atom1 = None
-        self.atom2 = None
-        self.atom3 = None
-        self.atom4 = None
-
-class Improper:
-    def __init__(self):
-        self.atom1 = None
-        self.atom2 = None
-        self.atom3 = None
-        self.atom4 = None
-
-class CMap:
-    def __init__(self):
-        self.atom1 = None
-        self.atom2 = None
-        self.atom3 = None
-        self.atom4 = None
-        self.atom5 = None
-        self.atom6 = None
-        self.atom7 = None
-        self.atom8 = None
-
-class Pair:
-    def __init__(self):
-        self.atom1 = None
-        self.atom2 = None
-
-
-
 class Param:
     def convert(self, reqformat):
         assert reqformat in ('charmm', 'gromacs')
@@ -248,6 +205,14 @@ class Param:
 
         elif isinstance(self, ImproperType):
             if reqformat == 'gromacs' and self.format == 'charmm':
+                for imp in self.charmm['param']:
+                    convimp = {}
+                    convimp['kpsi']  = imp['kpsi'] * 4.184
+                    convimp['delta'] = imp['delta']
+                    convimp['n']     = imp['n']
+                    self.gromacs['param'].append(convimp)
+                self.gromacs['func'] = 9
+
                 self.gromacs['param']['kpsi'] = self.charmm['param']['kpsi'] * 2 * 4.184
                 self.gromacs['param']['psi0'] = self.charmm['param']['psi0']
                 self.gromacs['func'] = 2
@@ -299,6 +264,11 @@ class BondType(Param):
     def __init__(self, format):
         assert format in ('charmm', 'gromacs')
         self.format = format
+
+
+        self.atom1 = None
+        self.atom2 = None
+
         self.atype1 = None
         self.atype2 = None
 
@@ -310,6 +280,11 @@ class AngleType(Param):
     def __init__(self, format):
         assert format in ('charmm', 'gromacs')
         self.format = format
+
+
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
 
         self.atype1 = None
         self.atype2 = None
@@ -323,6 +298,12 @@ class DihedralType(Param):
     def __init__(self, format):
         assert format in ('charmm', 'gromacs')
         self.format = format
+
+
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
+        self.atom4 = None
 
         self.atype1 = None
         self.atype2 = None
@@ -352,6 +333,15 @@ class CMapType(Param):
         assert format in ('charmm', 'gromacs')
         self.format = format
 
+        self.atom1 = None
+        self.atom2 = None
+        self.atom3 = None
+        self.atom4 = None
+        self.atom5 = None
+        self.atom6 = None
+        self.atom7 = None
+        self.atom8 = None
+
         self.atype1 = None
         self.atype2 = None
         self.atype3 = None
@@ -370,9 +360,13 @@ class InteractionType(Param):
         assert format in ('charmm', 'gromacs')
         self.format = format
 
+        self.atom1  = None
+        self.atom2  = None
+
         self.atype1 = None
         self.atype2 = None
 
         self.charmm = {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
-        self.gromacs= {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None} }
+        self.gromacs= {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None}, 'func':None }
+
 

@@ -37,7 +37,8 @@ def build_res_chain(m):
 
     m.chains = chains
 
-def build_pairs(m):
+def build_pairs(m, format):
+    assert format in ('charmm', 'gromacs', None)
     # using a molecule with bonds, angles and dihedrals, build pairs
     # print('building pairs with %d bonds, %d angles and %d dihedrals' % (
     #     len(m.bonds), len(m.angles), len(m.dihedrals)))
@@ -67,7 +68,7 @@ def build_pairs(m):
 
         _pairs.add((p1,p4))
 
-        thispair = blocks.Pair()
+        thispair = blocks.InteractionType(format)
         thispair.atom1 = dih.atom1
         thispair.atom2 = dih.atom4
 
