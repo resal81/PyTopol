@@ -12,6 +12,7 @@ class System(object):
         self.cmaptypes        = []
         self.interactiontypes = []
         self.pairtypes        = []
+        self.constrainttypes  = []
         self.forcefield=  None
 
 
@@ -31,8 +32,9 @@ class Molecule(object):
         self.cmaps     = []
         self.pairs     = []
         self.exclusion_numb = None  # 0, 1, 2, ..
-        self.exclusion_list = []  # individual exclusion can be implemented as an bond or agngle term
+        self.exclusions = []
         self.settles    = []
+        self.constraints= []
 
         self.name = None
 
@@ -233,8 +235,12 @@ class Param:
 
         elif isinstance(self, InteractionType):
             if reqformat == 'gromacs' and self.format == 'charmm':
-                self.gromacs['param']['lje'] = abs(self.charmm['param']['lje']) * 4.184
-                self.gromacs['param']['ljl'] = self.charmm['param']['ljl'] * 0.1 /  (2**(1.0/6.0))   # no *2
+                if self.charmm['param']['lje'] is not None:
+                    self.gromacs['param']['lje'] = abs(self.charmm['param']['lje']) * 4.184
+                    self.gromacs['param']['ljl'] = self.charmm['param']['ljl'] * 0.1 /  (2**(1.0/6.0))   # no *2
+                else:
+                    self.gromacs['param']['lje'] = None
+                    self.gromacs['param']['ljl'] = None
 
                 if self.charmm['param']['lje14'] is not None:
                     self.gromacs['param']['lje14'] = abs(self.charmm['param']['lje14']) * 4.184
@@ -326,9 +332,7 @@ class ImproperType(Param):
         self.atype4 = None
 
         self.charmm = {'param':[]}
-        self.gromacs= {'param':[], 'func': None}
-        # self.charmm = {'param':{'kpsi': None, 'psi0':None} }
-        # self.gromacs= {'param':{'kpsi': None, 'psi0':None}, 'func':None}
+        self.gromacs= {'param':[], 'func': None}  # {'kpsi': None, 'psi0':None}
 
 
 class CMapType(Param):
@@ -373,3 +377,27 @@ class InteractionType(Param):
         self.gromacs= {'param': {'lje':None, 'ljl':None, 'lje14':None, 'ljl14':None}, 'func':None }
 
 
+class SettleType(Param):
+    def __init__(self, format):
+        assert format in ('gromacs',)
+        self.atom = None
+        self.dOH  = None
+        self.dHH  = None
+
+class ConstraintType(Param):
+    def __init__(self, format):
+        assert format in ('gromacs',)
+
+        self.atom1 = None
+        self.atom2 = None
+
+        self.atype1 = None
+        self.atype2 = None
+
+        self.gromacs= {'param': {'b0':None}, 'func':None}
+
+
+class Exclusion:
+    def __init__(self):
+        self.main_atom  = None
+        self.other_atoms = []

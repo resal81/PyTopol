@@ -33,6 +33,7 @@ class GroTop(blocks.System):
 
         self.forcefield = 'gromacs'
 
+        found_sections = []
         curr_sec = None
         cmap_lines = []
 
@@ -56,6 +57,7 @@ class GroTop(blocks.System):
                 # is this a new section?
                 if line[0] == '[':
                     curr_sec = _find_section(line)
+                    found_sections.append(curr_sec)
                     continue
 
                 fields = line.split()
@@ -225,14 +227,18 @@ class GroTop(blocks.System):
                         raise NotImplementedError('function %d is not supported' % fu)
 
                     ang = blocks.AngleType('gromacs')
-                    if fu == 1:
+                    if fu in (1,):
                         if curr_sec == 'angletypes':
                             ang.atype1 = ai
                             ang.atype2 = aj
                             ang.atype3 = ak
-                            tetha0, ktetha = list(map(float, fields[4:6]))
 
-                            ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
+                            if fu == 1:
+                                tetha0, ktetha = list(map(float, fields[4:6]))
+                                ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
+
+                            else:
+                                raise ValueError
 
                             self.angletypes.append(ang)
 
@@ -241,6 +247,11 @@ class GroTop(blocks.System):
                             ang.atom1 = mol.atoms[ai-1]
                             ang.atom2 = mol.atoms[aj-1]
                             ang.atom3 = mol.atoms[ak-1]
+
+                            if fu == 1:
+                                pass
+                            else:
+                                raise ValueError
 
                             mol.angles.append(ang)
 
@@ -300,38 +311,110 @@ class GroTop(blocks.System):
 
                     dih = blocks.DihedralType('gromacs')
                     imp = blocks.ImproperType('gromacs')
-                    if fu == 1:
+
+                    if fu in (1,3,9):
                         if curr_sec == 'dihedraltypes':
-                            pass
+                            dih.atype1 = ai
+                            dih.atype2 = aj
+                            dih.atype3 = ak
+                            dih.atype4 = am
+
+                            if fu == 1:
+                                delta, kchi, n = list(map(float, fields[5:8]))
+                                dih.gromacs['param'].append({'kchi':kchi, 'n':n, 'delta':delta})
+                            elif fu == 3:
+                                c0, c1, c2, c3, c4, c5 = list(map(float, fields[5:11]))
+                                m = dict(c0=c0, c1=c1, c2=c2, c3=c3, c4=c4, c5=c5)
+                                dih.gromacs['param'].append(m)
+                            elif fu == 9:
+                                delta, kchi, n = list(map(float, fields[5:8]))
+                                dih.gromacs['param'].append({'kchi':kchi, 'n':n, 'delta':delta})
+                            else:
+                                raise ValueError
+
+                            dih.gromacs['func'] = fu
+                            self.dihedraltypes.append(dih)
+
                         elif curr_sec == 'dihedrals':
-                            pass
+                            ai, aj, ak, am = list(map(int, fields[:4]))
+                            dih.atom1 = mol.atoms[ai-1]
+                            dih.atom2 = mol.atoms[aj-1]
+                            dih.atom3 = mol.atoms[ak-1]
+                            dih.atom4 = mol.atoms[am-1]
+
+                            if fu == 1:
+                                pass
+                            elif fu == 3:
+                                pass
+                            elif fu == 9:
+                                pass
+                            else:
+                                raise ValueError
+
+                            mol.dihedrals.append(dih)
+
                         else:
                             raise ValueError
-                    elif fu == 2:
-                        pass
-                    elif fu == 3:
-                        pass
-                    elif fu == 4:
-                        pass
-                    elif fu == 9:
-                        pass
+
+                    elif fu in (2,4):
+                        if curr_sec == 'dihedraltypes':
+                            imp.atype1 = ai
+                            imp.atype2 = aj
+                            imp.atype3 = ak
+                            imp.atype4 = am
+
+                            if fu == 2:
+                                psi0 , kpsi = list(map(float, fields[5:7]))
+                                imp.gromacs['param'].append({'kpsi':kpsi, 'psi0': psi0})
+                            elif fu == 4:
+                                psi0 , kpsi, n = list(map(float, fields[5:8]))
+                                imp.gromacs['param'].append({'kpsi':kpsi, 'psi0': psi0, 'n':n})
+                            else:
+                                raise ValueError
+
+                            imp.gromacs['func'] = fu
+                            self.impropertypes.append(imp)
+
+                        elif curr_sec == 'dihedrals':
+                            ai, aj, ak, am = list(map(int, fields[:4]))
+                            imp.atom1 = mol.atoms[ai-1]
+                            imp.atom2 = mol.atoms[aj-1]
+                            imp.atom3 = mol.atoms[ak-1]
+                            imp.atom4 = mol.atoms[am-1]
+
+                            if fu == 2:
+                                pass
+                            elif fu == 4:
+                                pass
+                            else:
+                                raise ValueError
+
+                            mol.impropers.append(dih)
+
+                        else:
+                            raise ValueError
+
                     else:
                         raise NotImplementedError
 
+
                 elif curr_sec in ('cmaptypes', 'cmap'):
-                    pass
-                    # an1, an2, an3, an4, an8 = int(fields[0]), int(fields[1]), int(fields[2]), int(fields[3]), int(fields[4])
-                    # fu = int(fields[5])
-                    # rest = fields[6:]
 
-                    # cmap = blocks.CMap()
-                    # cmap.atom1 = mol.atoms[an1-1]
-                    # cmap.atom2 = mol.atoms[an2-1]
-                    # cmap.atom3 = mol.atoms[an3-1]
-                    # cmap.atom4 = mol.atoms[an4-1]
-                    # cmap.atom8 = mol.atoms[an8-1]
+                    cmap = blocks.CMapType('gromacs')
+                    if curr_sec == 'cmaptypes':
+                        cmap_lines.append(line)
+                    else:
+                        ai, aj, ak, am, an = list(map(int, fields[:5]))
+                        fu = int(fields[5])
+                        assert fu == 1
+                        cmap.atom1 = mol.atoms[ai-1]
+                        cmap.atom2 = mol.atoms[aj-1]
+                        cmap.atom3 = mol.atoms[ak-1]
+                        cmap.atom4 = mol.atoms[am-1]
+                        cmap.atom8 = mol.atoms[an-1]
 
-                    # mol.cmaps.append(cmap)
+                        mol.cmaps.append(cmap)
+
 
                 elif curr_sec == 'settles':
                     '''
@@ -340,55 +423,81 @@ class GroTop(blocks.System):
                     '''
 
                     assert len(fields) == 4
-                    ai = fields[0]
+                    ai = int(fields[0])
                     fu = int(fields[1])
                     assert fu == 1
 
-                elif curr_sec in ('exclusions',):
-                    '''
-                    section     #at     fu      #param
-                    ----------------------------------
-                    '''
+                    settle = blocks.SettleType('gromacs')
+                    settle.atom = mol.atoms[ai-1]
+                    settle.dOH = float(fields[2])
+                    settle.dHH = float(fields[3])
 
-                    ai = fields[0]
+                    mol.settles.append(settle)
+
+                elif curr_sec in ('exclusions',):
+                    ai = int(fields[0])
+                    other = list(map(int, fields[1:]))
+
+                    exc = blocks.Exclusion()
+                    exc.main_atom  = mol.atoms[ai-1]
+                    exc.other_atoms= [mol.atoms[k-1] for k in other]
+
+                    mol.exclusions.append(exc)
+
 
                 elif curr_sec in ('constrainttypes', 'constraints'):
                     '''
                     section     #at     fu      #param
                     ----------------------------------
+                    constraints 2       1       1
+                    constraints 2       2       1
                     '''
 
                     ai, aj = fields[:2]
                     fu = int(fields[2])
                     assert fu in (1,2)
 
+                    cons = blocks.ConstraintType('gromacs')
+
+                    # TODO: what's different between 1 and 2
+                    if fu == 1 or fu == 2:
+                        if curr_sec == 'constrainttypes':
+                            cons.atype1 = ai
+                            cons.atype2 = aj
+                            b0 = float(fields[3])
+                            cons.gromacs = {'param':{'b0':b0}, 'func': fu}
+
+                            self.constrainttypes.append(cons)
+
+                        elif curr_sec == 'constraints':
+                            ai, aj = list(map(int, fields[:2]))
+                            cons.atom1 = mol.atoms[ai-1]
+                            cons.atom2 = mol.atoms[aj-1]
+
+                            mol.constraints.append(cons)
+
+                        else:
+                            raise ValueError
+                    else:
+                        raise ValueError
+
                 elif curr_sec in ('position_restraints', 'distance_restraints', 'dihedral_restraints',
                                   'orientation_restraints', 'angle_restraints', 'angle_restraints_z'):
                     pass
 
+
                 elif curr_sec in ('implicit_genborn_params',):
                     '''
-                    section     #at     fu      #param
-                    ----------------------------------
+                    attype   sar     st      pi      gbr      hct
                     '''
-
                     pass
 
                 elif curr_sec == 'system':
-                    '''
-                    section     #at     fu      #param
-                    ----------------------------------
-                    '''
-
                     assert len(fields) == 1
                     self.name = fields[0]
 
-                elif curr_sec == 'molecules':
-                    '''
-                    section     #at     fu      #param
-                    ----------------------------------
-                    '''
 
+                elif curr_sec == 'molecules':
                     # if the number of a molecule is more than 1, add copies to system.molecules
                     assert len(fields) == 2
                     mname, nmol = fields[0], int(fields[1])
@@ -397,6 +506,8 @@ class GroTop(blocks.System):
 
                 else:
                     print('Uknown section in topology: %s' % curr_sec)
+
+        print(found_sections)
 
 
 
