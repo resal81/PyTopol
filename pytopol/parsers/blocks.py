@@ -15,6 +15,8 @@ class System(object):
         self.constrainttypes  = []
         self.forcefield=  None
 
+        self.information = {} # like 'atomtypes': self.atomtypes
+
 
 
 class Molecule(object):
@@ -35,6 +37,8 @@ class Molecule(object):
         self.exclusions = []
         self.settles    = []
         self.constraints= []
+
+        self.information = {}  # like 'atoms': self.atoms
 
         self.name = None
 

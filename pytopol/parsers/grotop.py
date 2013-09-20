@@ -18,23 +18,75 @@ class GroTop(blocks.System):
             'nbfunc': None, 'comb-rule':None, 'gen-pairs':None, 'fudgeLJ':None, 'fudgeQQ':None,
         }
 
+        self.dict_molname_mol = {}   # contains molname:mol
+        self.found_sections = []
+        self.forcefield = 'gromacs'
 
         self.molecules = []
         self._parse(fname)
         self.molecules = tuple(self.molecules)
 
+    def __repr__(self):
+        moltypenames = list(self.dict_molname_mol.keys())
+        moltypenames.sort()
+
+        data = []
+        data.append('\n')
+
+        main_items = set(['atomtypes', 'pairtypes', 'bondtypes', 'angletypes', 'dihedraltypes'])
+        other_items = ['%s (%d)' % (m, len(self.information[m])) for m in list(self.information.keys()) if m not in main_items]
+        other_items = ' '.join(other_items)
+        nattype = len(self.atomtypes)
+        nprtype = len(self.pairtypes)
+        nbndtype= len(self.bondtypes)
+        nangtype= len(self.angletypes)
+        ndihtype= len(self.dihedraltypes)
+        nimptype= len(self.impropertypes)
+        data.append('{:>20s}  {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}'.format('Param types:', 'atom', 'pair', 'bond', 'ang', 'dih', 'imp'))
+        msg = '{:20s}  {:7d} {:7d} {:7d} {:7d} {:7d} {:7d}    {:s}'.format('', nattype, nprtype, nbndtype, nangtype, ndihtype, nimptype, other_items)
+        data.append('=' * 69)
+        data.append(msg)
+        data.append('\n')
+
+
+        main_items = set(['atoms', 'pairs', 'bonds', 'angles', 'dihedrals'])
+        data.append('{:>20s}  {:>7s} {:>7s} {:>7s} {:>7s} {:>7s} {:>7s}'.format('Params:', 'atom', 'pair', 'bond', 'ang', 'dih', 'imp'))
+        data.append('=' * 69)
+        for mname in moltypenames:
+            mol = self.dict_molname_mol[mname]
+            other_items = ['%s (%d)' % (m, len(mol.information[m])) for m in list(mol.information.keys()) if m not in main_items]
+            other_items = ' '.join(other_items)
+
+            natoms = len(mol.atoms)
+            npairs = len(mol.pairs)
+            nbonds = len(mol.bonds)
+            nangles= len(mol.angles)
+            ndih   = len(mol.dihedrals)
+            nimp   = len(mol.impropers)
+            msg = '{:20s}  {:7d} {:7d} {:7d} {:7d} {:7d} {:7d}    {:s}'.format(mol.name, natoms, npairs, nbonds, nangles, ndih, nimp, other_items)
+            data.append(msg)
+
+
+
+
+        return '\n'.join(data)
+
+
+
+
     def _parse(self, fname):
 
-        def _find_section(line):
-            return line.strip('[').strip(']').strip()
+        _find_section = lambda line: line.strip('[').strip(']').strip()
 
-        mol = None
-        dict_molname_mol = {}
+        def _add_info(sys_or_mol, section, container):
+            # like (mol, 'atomtypes', mol.atomtypes)
+            if sys_or_mol.information.get(section, False) is False:
+                sys_or_mol.information[section] = container
 
-        self.forcefield = 'gromacs'
 
-        found_sections = []
-        curr_sec = None
+
+        mol        = None   # to hold the current mol
+        curr_sec   = None
         cmap_lines = []
 
         with open(fname) as f:
@@ -51,34 +103,43 @@ class GroTop(blocks.System):
                 if line[0] == '*':
                     continue
 
+                # the topology must be stand-alone (i.e. no includes)
                 if line.startswith('#include'):
-                    raise ValueError
+                    msg = 'The topology file has "#include" statements.'
+                    msg+= ' You must provide a processed topology file that grompp creates.'
+                    raise ValueError(msg)
 
-                # is this a new section?
+                # find sections
                 if line[0] == '[':
                     curr_sec = _find_section(line)
-                    found_sections.append(curr_sec)
+                    self.found_sections.append(curr_sec)
                     continue
 
                 fields = line.split()
 
                 if curr_sec == 'defaults':
+                    '''
                     # ; nbfunc        comb-rule       gen-pairs       fudgeLJ fudgeQQ
                     #1               2               yes             0.5     0.8333
+                    '''
+
                     assert len(fields) == 5
-                    self.defaults['nbfunc'] = fields[0]
+
+                    self.defaults['nbfunc']    = fields[0]
                     self.defaults['comb-rule'] = int(fields[1])
                     self.defaults['gen-pairs'] = fields[2]
-                    self.defaults['fudgeLJ'] = float(fields[3])
-                    self.defaults['fudgeQQ'] = float(fields[4])
+                    self.defaults['fudgeLJ']   = float(fields[3])
+                    self.defaults['fudgeQQ']   = float(fields[4])
 
                 elif curr_sec == 'atomtypes':
+                    '''
+                    # ;name               at.num    mass         charge    ptype  sigma   epsilon
+                    # ; name  bond_type   at.num    mass         charge    ptype  sigma    epsilon
+                    '''
+
                     if len(fields) not in (7,8):
                         print('skipping atomtype line with neither 7 or 8 fields: \n %s' % line)
                         continue
-
-                    # ;name               at.num    mass         charge    ptype  sigma   epsilon
-                    # ; name  bond_type   at.num    mass         charge    ptype  sigma    epsilon
 
                     shift = 0 if len(fields) == 7 else 1
                     at = blocks.AtomType('gromacs')
@@ -88,13 +149,17 @@ class GroTop(blocks.System):
 
                     particletype = fields[4+shift]
                     assert particletype in ('A', 'S', 'V', 'D')
-
                     if particletype not in ('A',):
-                        print('warning: not-atom particletype: "%s"' % line)
+                        print('warning: non-atom particletype: "%s"' % line)
 
                     sig = float(fields[5+shift])
                     eps = float(fields[6+shift])
+
                     at.gromacs= {'param': {'lje':eps, 'ljl':sig, 'lje14':None, 'ljl14':None} }
+
+                    self.atomtypes.append(at)
+
+                    _add_info(self, curr_sec, self.atomtypes)
 
 
                 # extend system.molecules
@@ -103,22 +168,30 @@ class GroTop(blocks.System):
 
                     mol = blocks.Molecule()
 
-                    mol.name, mol.exclusion_numb = fields[0], int(fields[1])
+                    mol.name = fields[0]
+                    mol.exclusion_numb = int(fields[1])
 
-                    dict_molname_mol[mol.name] = mol
+                    self.dict_molname_mol[mol.name] = mol
 
 
                 elif curr_sec == 'atoms':
+                    '''
                     #id    at_type     res_nr  residu_name at_name  cg_nr  charge   mass  typeB    chargeB      massB
                     # 1       OC          1       OH          O1       1      -1.32
-                    aserial, atype, aname = int(fields[0]), fields[1], fields[4]
-                    resnumb, resname = int(fields[2]), fields[3]
-                    cgnr, charge = int(fields[5]), float(fields[6])
+                    '''
+
+                    aserial = int(fields[0])
+                    atype   = fields[1]
+                    resnumb = int(fields[2])
+                    resname = fields[3]
+                    aname   = fields[4]
+                    cgnr    = int(fields[5])
+                    charge  = float(fields[6])
                     rest = fields[7:]
 
-                    atom = blocks.Atom()
-                    atom.name = aname
-                    atom.number = aserial
+                    atom         = blocks.Atom()
+                    atom.name    = aname
+                    atom.number  = aserial
                     atom.resname = resname
                     atom.resnumb = resnumb
                     atom.charge  = charge
@@ -128,6 +201,8 @@ class GroTop(blocks.System):
                         atom.mass = mass
 
                     mol.atoms.append(atom)
+
+                    _add_info(mol, curr_sec, mol.atoms)
 
                 elif curr_sec in ('pairtypes', 'pairs', 'pairs_nb'):
                     '''
@@ -140,24 +215,31 @@ class GroTop(blocks.System):
                     '''
 
                     ai, aj = fields[:2]
-                    fu = int(fields[2])
+                    fu     = int(fields[2])
                     assert fu in (1,2)
 
                     pair = blocks.InteractionType('gromacs')
-                    if curr_sec=='pairtypes' and fu==1:
-                        pair.atype1 = ai
-                        pair.atype2 = aj
-                        v, w = list(map(float, fields[3:5]))
-                        pair.gromacs = {'param': {'lje':None, 'ljl':None, 'lje14':w, 'ljl14':v}, 'func':fu }
+                    if fu == 1:
+                        if curr_sec=='pairtypes':
+                            pair.atype1 = ai
+                            pair.atype2 = aj
+                            v, w = list(map(float, fields[3:5]))
+                            pair.gromacs = {'param': {'lje':None, 'ljl':None, 'lje14':w, 'ljl14':v}, 'func':fu }
 
-                        self.pairtypes.append(pair)
+                            self.pairtypes.append(pair)
+                            _add_info(self, curr_sec, self.pairtypes)
 
-                    elif curr_sec == 'pairs' and fu==1:
-                        ai, aj = list( map(int, [ai,aj]) )
-                        pair.atom1 = mol.atoms[ai-1]
-                        pair.atom2 = mol.atoms[aj-1]
+                        elif curr_sec == 'pairs':
+                            ai, aj = list( map(int, [ai,aj]) )
+                            pair.atom1 = mol.atoms[ai-1]
+                            pair.atom2 = mol.atoms[aj-1]
+                            pair.gromacs['func'] = fu
 
-                        mol.pairs.append(pair)
+                            mol.pairs.append(pair)
+                            _add_info(mol, curr_sec, mol.pairs)
+
+                        else:
+                            raise ValueError
 
                     else:
                         raise NotImplementedError('%s with functiontype %d is not supported' % (curr_sec,fu))
@@ -180,11 +262,11 @@ class GroTop(blocks.System):
                     '''
 
                     ai, aj = fields[:2]
-                    fu = int(fields[2])
+                    fu     = int(fields[2])
                     assert fu in (1,2,3,4,5,6,7,8,9,10)
 
                     if fu != 1:
-                        raise NotImplementedError('function %d is not supported' % fu)
+                        raise NotImplementedError('function %d is not yet supported' % fu)
 
                     bond = blocks.BondType('gromacs')
 
@@ -196,12 +278,17 @@ class GroTop(blocks.System):
 
                             bond.gromacs = {'param':{'kb':kb, 'b0':b0}, 'func':fu}
 
+                            self.bondtypes.append(bond)
+                            _add_info(self, curr_sec, self.bondtypes)
+
                         elif curr_sec == 'bonds':
                             ai, aj = list(map(int, [ai, aj]))
                             bond.atom1 = mol.atoms[ai-1]
                             bond.atom2 = mol.atoms[aj-1]
+                            bond.gromacs['func'] = fu
 
                             mol.bonds.append(bond)
+                            _add_info(mol, curr_sec, mol.bonds)
 
                     else:
                         raise NotImplementedError
@@ -220,40 +307,34 @@ class GroTop(blocks.System):
                     '''
 
                     ai, aj , ak = fields[:3]
-                    fu = int(fields[3])
+                    fu          = int(fields[3])
                     assert fu in (1,2,3,4,5,6,8)  # no 7
 
                     if fu not in (1,5):
-                        raise NotImplementedError('function %d is not supported' % fu)
+                        raise NotImplementedError('function %d is not yet supported' % fu)
 
                     ang = blocks.AngleType('gromacs')
-                    if fu in (1,):
+                    if fu == 1:
                         if curr_sec == 'angletypes':
                             ang.atype1 = ai
                             ang.atype2 = aj
                             ang.atype3 = ak
 
-                            if fu == 1:
-                                tetha0, ktetha = list(map(float, fields[4:6]))
-                                ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
-
-                            else:
-                                raise ValueError
+                            tetha0, ktetha = list(map(float, fields[4:6]))
+                            ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':None, 's0':None}, 'func':fu}
 
                             self.angletypes.append(ang)
+                            _add_info(self, curr_sec, self.angletypes)
 
                         elif curr_sec == 'angles':
                             ai, aj, ak = list(map(int, [ai, aj, ak]))
                             ang.atom1 = mol.atoms[ai-1]
                             ang.atom2 = mol.atoms[aj-1]
                             ang.atom3 = mol.atoms[ak-1]
-
-                            if fu == 1:
-                                pass
-                            else:
-                                raise ValueError
+                            ang.gromacs['func'] = fu
 
                             mol.angles.append(ang)
+                            _add_info(mol, curr_sec, mol.angles)
 
                         else:
                             raise ValueError
@@ -268,14 +349,17 @@ class GroTop(blocks.System):
                             ang.gromacs = {'param':{'ktetha':ktetha, 'tetha0':tetha0, 'kub':kub, 's0':s0}, 'func':fu}
 
                             self.angletypes.append(ang)
+                            _add_info(self, curr_sec, self.angletypes)
 
                         elif curr_sec == 'angles':
                             ai, aj, ak = list(map(int, [ai, aj, ak]))
                             ang.atom1 = mol.atoms[ai-1]
                             ang.atom2 = mol.atoms[aj-1]
                             ang.atom3 = mol.atoms[ak-1]
+                            ang.gromacs['func'] = fu
 
                             mol.angles.append(ang)
+                            _add_info(mol, curr_sec, mol.angles)
 
                         else:
                             raise ValueError
@@ -307,7 +391,7 @@ class GroTop(blocks.System):
                     assert fu in (1,2,3,4,5,8,9)
 
                     if fu not in (1,2,3,4,9):
-                        raise NotImplementedError('function %d is not supported' % fu)
+                        raise NotImplementedError('function %d is not yet supported' % fu)
 
                     dih = blocks.DihedralType('gromacs')
                     imp = blocks.ImproperType('gromacs')
@@ -334,6 +418,7 @@ class GroTop(blocks.System):
 
                             dih.gromacs['func'] = fu
                             self.dihedraltypes.append(dih)
+                            _add_info(self, curr_sec, self.dihedraltypes)
 
                         elif curr_sec == 'dihedrals':
                             ai, aj, ak, am = list(map(int, fields[:4]))
@@ -341,6 +426,7 @@ class GroTop(blocks.System):
                             dih.atom2 = mol.atoms[aj-1]
                             dih.atom3 = mol.atoms[ak-1]
                             dih.atom4 = mol.atoms[am-1]
+                            dih.gromacs['func'] = fu
 
                             if fu == 1:
                                 pass
@@ -352,6 +438,7 @@ class GroTop(blocks.System):
                                 raise ValueError
 
                             mol.dihedrals.append(dih)
+                            _add_info(mol, curr_sec, mol.dihedrals)
 
                         else:
                             raise ValueError
@@ -374,6 +461,7 @@ class GroTop(blocks.System):
 
                             imp.gromacs['func'] = fu
                             self.impropertypes.append(imp)
+                            _add_info(self, curr_sec, self.impropertypes)
 
                         elif curr_sec == 'dihedrals':
                             ai, aj, ak, am = list(map(int, fields[:4]))
@@ -381,6 +469,7 @@ class GroTop(blocks.System):
                             imp.atom2 = mol.atoms[aj-1]
                             imp.atom3 = mol.atoms[ak-1]
                             imp.atom4 = mol.atoms[am-1]
+                            imp.gromacs['func'] = fu
 
                             if fu == 2:
                                 pass
@@ -389,7 +478,8 @@ class GroTop(blocks.System):
                             else:
                                 raise ValueError
 
-                            mol.impropers.append(dih)
+                            mol.impropers.append(imp)
+                            _add_info(mol, curr_sec, mol.impropers)
 
                         else:
                             raise ValueError
@@ -403,6 +493,7 @@ class GroTop(blocks.System):
                     cmap = blocks.CMapType('gromacs')
                     if curr_sec == 'cmaptypes':
                         cmap_lines.append(line)
+                        _add_info(self, curr_sec, self.cmaptypes)
                     else:
                         ai, aj, ak, am, an = list(map(int, fields[:5]))
                         fu = int(fields[5])
@@ -412,8 +503,10 @@ class GroTop(blocks.System):
                         cmap.atom3 = mol.atoms[ak-1]
                         cmap.atom4 = mol.atoms[am-1]
                         cmap.atom8 = mol.atoms[an-1]
+                        cmap.gromacs['func'] = fu
 
                         mol.cmaps.append(cmap)
+                        _add_info(mol, curr_sec, mol.cmaps)
 
 
                 elif curr_sec == 'settles':
@@ -433,6 +526,7 @@ class GroTop(blocks.System):
                     settle.dHH = float(fields[3])
 
                     mol.settles.append(settle)
+                    _add_info(mol, curr_sec, mol.settles)
 
                 elif curr_sec in ('exclusions',):
                     ai = int(fields[0])
@@ -443,6 +537,7 @@ class GroTop(blocks.System):
                     exc.other_atoms= [mol.atoms[k-1] for k in other]
 
                     mol.exclusions.append(exc)
+                    _add_info(mol, curr_sec, mol.exclusions)
 
 
                 elif curr_sec in ('constrainttypes', 'constraints'):
@@ -468,13 +563,16 @@ class GroTop(blocks.System):
                             cons.gromacs = {'param':{'b0':b0}, 'func': fu}
 
                             self.constrainttypes.append(cons)
+                            _add_info(self, curr_sec, self.constrainttypes)
 
                         elif curr_sec == 'constraints':
                             ai, aj = list(map(int, fields[:2]))
                             cons.atom1 = mol.atoms[ai-1]
                             cons.atom2 = mol.atoms[aj-1]
+                            cons.gromacs['func'] = fu
 
                             mol.constraints.append(cons)
+                            _add_info(mol, curr_sec, mol.constraints)
 
                         else:
                             raise ValueError
@@ -498,16 +596,17 @@ class GroTop(blocks.System):
 
 
                 elif curr_sec == 'molecules':
-                    # if the number of a molecule is more than 1, add copies to system.molecules
                     assert len(fields) == 2
                     mname, nmol = fields[0], int(fields[1])
+
+                    # dict_molname_mol[mname].build_res_chain()
+
+                    # if the number of a molecule is more than 1, add copies to system.molecules
                     for i in range(nmol):
-                        self.molecules.append(dict_molname_mol[mname])
+                        self.molecules.append(self.dict_molname_mol[mname])
 
                 else:
                     print('Uknown section in topology: %s' % curr_sec)
-
-        print(found_sections)
 
 
 
@@ -814,9 +913,9 @@ class SystemToGroTop(object):
             at2 = cmap.atype2
             at3 = cmap.atype3
             at4 = cmap.atype4
-            at5 = cmap.atype5
-            at6 = cmap.atype6
-            at7 = cmap.atype7
+            #at5 = cmap.atype5
+            #at6 = cmap.atype6
+            #at7 = cmap.atype7
             at8 = cmap.atype8
 
             cmap.convert('gromacs')
@@ -927,7 +1026,7 @@ class SystemToGroTop(object):
 if __name__ == '__main__':
     import sys
     grotop = GroTop(sys.argv[1])
-    print('%d molecules' % len(grotop.molecules))
+    print(grotop)
 
 
 
