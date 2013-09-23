@@ -151,7 +151,7 @@ class PSFSystem(blocks.System):
 
         # build chain and residues
         build_res_chain(mol)
-        build_pairs(mol)
+        build_pairs(mol, 'charmm')
 
         t2 = time.time()
         self.lgr.debug("parsing took %4.1f seconds" % (t2-t1))
@@ -256,7 +256,7 @@ class PSFSystem(blocks.System):
 
         # make sure we used all the enteties in the temp_mol
         assert len(temp_mol.atoms)     == _NA
-        assert len(temp_mol.bonds)     == _B
+        assert len(temp_mol.bonds)     == _B, '%d != %d' % (len(temp_mol.bonds), _B)
         assert len(temp_mol.angles)    == _A
         assert len(temp_mol.dihedrals) == _D
         assert len(temp_mol.impropers) == _I
@@ -352,7 +352,7 @@ class PSFSystem(blocks.System):
                     _m = i * conf['n']
                     _n = i * conf['n'] + 1
 
-                    b = blocks.Bond()
+                    b = blocks.BondType('charmm')
                     atom1 = m.anumb_to_atom(int(f[_m]))
                     atom2 = m.anumb_to_atom(int(f[_n]))
 
@@ -369,7 +369,7 @@ class PSFSystem(blocks.System):
                     _n = i * conf['n'] + 1
                     _o = i * conf['n'] + 2
 
-                    a = blocks.Angle()
+                    a = blocks.AngleType('charmm')
                     atom1 = m.anumb_to_atom(int(f[_m]))
                     atom2 = m.anumb_to_atom(int(f[_n]))
                     atom3 = m.anumb_to_atom(int(f[_o]))
@@ -390,10 +390,10 @@ class PSFSystem(blocks.System):
                     _p = i * conf['n'] + 3
 
                     if conf['type'] == 'dihedral':
-                        d = blocks.Dihedral()
+                        d = blocks.DihedralType('charmm')
                         cont = m.dihedrals
                     else:
-                        d = blocks.Improper()
+                        d = blocks.ImproperType('charmm')
                         cont = m.impropers
 
                     atom1 = m.anumb_to_atom(int(f[_m]))
@@ -421,7 +421,7 @@ class PSFSystem(blocks.System):
                     _s = i * conf['n'] + 6
                     _t = i * conf['n'] + 7
 
-                    cm = blocks.CMap()
+                    cm = blocks.CMapType('charmm')
                     atom1 = m.anumb_to_atom(int(f[_m]))
                     atom2 = m.anumb_to_atom(int(f[_n]))
                     atom3 = m.anumb_to_atom(int(f[_o]))
