@@ -118,7 +118,7 @@ class Atom(object):
         altlocs = list,
         atomtype= str,
         radius  = float,
-        charge  = radius,
+        charge  = float,
         mass    = float,
         chain   = str,
         resname = str,

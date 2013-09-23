@@ -25,18 +25,27 @@ paths = {
 # the system ids that tests should be skipped for
 run_systems = [
     # '001',
-    '002',
+    # '002',
     # '003', '004', '005', '006', '007', '008', '009', '010',
 
     # '101',    # popc memb
     # '102',    # dopc memb
 
-    '201',    # Lysozyme
-    '301',    # cholestrol
+    # '201',    # Lysozyme
+    # '301',    # cholestrol
 
     # '401', '402', '403',
 
     # '501',     # glucl
+    # '502',     # glucl
+    # '503',     # glucl
+    # '504',     # glucl
+    # '505',     # glucl
+    # '506',     # glucl
+    # '507',     # glucl
+    '508',     # glucl
+    '509',     # glucl
+    '510',
 
     # '601',      # gic
     # '602',      # vid : pr + chol + lipid
@@ -252,17 +261,151 @@ systems = {
     # protein-membrane
 
     '501': {
-        'psf':'glucl/glucl_autopsf.psf',
-        'pdb':'glucl/glucl_autopsf.pdb',
+        'psf':'archive/glucl/A1a_autopsf.psf',
+        'pdb':'archive/glucl/A1a_autopsf.pdb',
         'pars':['par/par_all36_prot.prm',
                 'par/par_all36_lipid.prm',
                ],
-        'info': 'GluCl + POPC memb in vacuum (CHARMM 36, 64247 atoms)',
-        'name': 'GluCl+POPC',
+        'info': 'chain A-part1-a',
+        'name': 'A1a',
         'ff': 'CH36',
-        'natoms':  64247,
-        'nres':-1,
+        'natoms':  1488,
+        'nres':94,
     },
+    '502': {
+        'psf':'archive/glucl/A1b_autopsf.psf',
+        'pdb':'archive/glucl/A1b_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'chain A-part1-b',
+        'name': 'A1b',
+        'ff': 'CH36',
+        'natoms':  1885,
+        'nres':117,
+    },
+    '503': {
+        'psf':'archive/glucl/A1_autopsf.psf',
+        'pdb':'archive/glucl/A1_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'chain A-part1',
+        'name': 'A1',
+        'ff': 'CH36',
+        'natoms':  3375,
+        'nres':211,
+    },
+    '504': {
+        'psf':'archive/glucl/A2_autopsf.psf',
+        'pdb':'archive/glucl/A2_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'chain A-part2',
+        'name': 'A2',
+        'ff': 'CH36',
+        'natoms':  2081,
+        'nres':129,
+    },
+    '505': {
+        'psf':'archive/glucl/chainA_autopsf.psf',
+        'pdb':'archive/glucl/chainA_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'GluCl chain A',
+        'name': 'chainA',
+        'ff': 'CH36',
+        'natoms':  5456,
+        'nres':340,
+    },
+    '506': {
+        'psf':'archive/glucl/A1bI_autopsf.psf',
+        'pdb':'archive/glucl/A1bI_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'chain A-part1-b-I (cys)',
+        'name': 'A1bI',
+        'ff': 'CH36',
+        'natoms':  1131,
+        'nres':73,
+    },
+    '507': {
+        'psf':'archive/glucl/cys1_autopsf.psf',
+        'pdb':'archive/glucl/cys1_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'cys1',
+        'name': 'cys1',
+        'ff': 'CH36',
+        'natoms':  243,
+        'nres':15,
+    },
+    '508': {
+        'psf':'archive/glucl/cys2_autopsf.psf',
+        'pdb':'archive/glucl/cys2_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'cys2',
+        'name': 'cys2',
+        'ff': 'CH36',
+        'natoms':  20,
+        'nres':2,
+    },
+    '509': {
+        'psf':'archive/glucl/cys3_autopsf.psf',
+        'pdb':'archive/glucl/cys3_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'cys3',
+        'name': 'cys3',
+        'ff': 'CH36',
+        'natoms':  20,
+        'nres':2,
+    },
+    '510': {
+        'psf':'archive/glucl/cys4_autopsf.psf',
+        'pdb':'archive/glucl/cys4_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'cys4',
+        'name': 'cys4',
+        'ff': 'CH36',
+        'natoms':  243,
+        'nres':15,
+    },
+
+    '520': {
+        'psf':'archive/glucl/glucl_autopsf.psf',
+        'pdb':'archive/glucl/glucl_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'GluCl',
+        'name': 'Glucl',
+        'ff': 'CH36',
+        'natoms':  27263,
+        'nres':1699,
+    },
+    '521': {
+        'psf':'archive/glucl/memb_autopsf.psf',
+        'pdb':'archive/glucl/memb_autopsf.pdb',
+        'pars':['par/par_all36_prot.prm',
+                'par/par_all36_lipid.prm',
+               ],
+        'info': 'Memb',
+        'name': 'Memb',
+        'ff': 'CH36',
+        'natoms':  36984,
+        'nres':276,
+    },
+
 
     # archive $ gic
 
@@ -316,7 +459,7 @@ systems = {
         'pars':['par/par_all36_prot.prm',
                ],
         'info': 'Protein',
-        'name': 'P',
+        'name': 'Protein',
         'ff': 'CH36',
         'natoms':  4294,
         'nres':282,

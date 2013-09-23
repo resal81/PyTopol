@@ -41,7 +41,7 @@ output/*/index.html
 # Sphinx
 docs/_build
 
-# 
+#
 *.itp
 *.top
 *.log
@@ -57,3 +57,5 @@ test/systems/8*
 test/systems/9*
 test/systems/archive
 .DS_Store
+
+*sublime-project

@@ -19,8 +19,8 @@ class GroTop(blocks.System):
         }
 
         self.dict_molname_mol = {}   # contains molname:mol
-        self.found_sections = []
-        self.forcefield = 'gromacs'
+        self.found_sections   = []
+        self.forcefield       = 'gromacs'
 
         self.molecules = []
         self._parse(fname)
@@ -82,8 +82,6 @@ class GroTop(blocks.System):
             # like (mol, 'atomtypes', mol.atomtypes)
             if sys_or_mol.information.get(section, False) is False:
                 sys_or_mol.information[section] = container
-
-
 
         mol        = None   # to hold the current mol
         curr_sec   = None
@@ -191,6 +189,7 @@ class GroTop(blocks.System):
 
                     atom         = blocks.Atom()
                     atom.name    = aname
+                    atom.atomtype= atype
                     atom.number  = aserial
                     atom.resname = resname
                     atom.resnumb = resnumb
@@ -579,8 +578,12 @@ class GroTop(blocks.System):
                     else:
                         raise ValueError
 
-                elif curr_sec in ('position_restraints', 'distance_restraints', 'dihedral_restraints',
-                                  'orientation_restraints', 'angle_restraints', 'angle_restraints_z'):
+                elif curr_sec in ('position_restraints',
+                                  'distance_restraints',
+                                  'dihedral_restraints',
+                                  'orientation_restraints',
+                                  'angle_restraints',
+                                  'angle_restraints_z'):
                     pass
 
 
@@ -599,14 +602,14 @@ class GroTop(blocks.System):
                     assert len(fields) == 2
                     mname, nmol = fields[0], int(fields[1])
 
-                    # dict_molname_mol[mname].build_res_chain()
-
                     # if the number of a molecule is more than 1, add copies to system.molecules
                     for i in range(nmol):
                         self.molecules.append(self.dict_molname_mol[mname])
 
                 else:
                     print('Uknown section in topology: %s' % curr_sec)
+
+
 
 
 
