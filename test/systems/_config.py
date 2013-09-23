@@ -25,14 +25,14 @@ paths = {
 # the system ids that tests should be skipped for
 run_systems = [
     # '001',
-    # '002',
+    '002',
     # '003', '004', '005', '006', '007', '008', '009', '010',
 
-    # '101',    # popc memb
-    # '102',    # dopc memb
+    '101',    # popc memb
+    '102',    # dopc memb
 
-    # '201',    # Lysozyme
-    # '301',    # cholestrol
+    '201',    # Lysozyme
+    '301',    # cholestrol
 
     # '401', '402', '403',
 
@@ -43,12 +43,12 @@ run_systems = [
     # '505',     # glucl
     # '506',     # glucl
     # '507',     # glucl
-    '508',     # glucl
-    '509',     # glucl
-    '510',
+    # '508',     # glucl
+    # '509',     # glucl
+    # '510',
 
     # '601',      # gic
-    # '602',      # vid : pr + chol + lipid
+    '602',      # vid : pr + chol + lipid
     # '603',      # vid : pr + chol
     # '604',      # vid : pr
     # '605',      # vid : chol + lipid
