@@ -391,7 +391,7 @@ class CharmmPar(object):
                 p = self.dihedralpars.get_charmm_dihedral_wildcard((at1, at2, at3, at4))
 
                 if len(p) == 0:
-                    msg = "for dihedral %s-%s-%s-%s no parameters was found" % (at1, at2, at3, at4)
+                    msg = "for dihedral %s-%s-%s-%s no parameter was found" % (at1, at2, at3, at4)
                     if not panic_on_missing_param:
                         self.lgr.error(msg)
                         continue
