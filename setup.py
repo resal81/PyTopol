@@ -3,6 +3,7 @@
 import os
 import sys
 from setuptools.command.test import test as TestCommand
+from setuptools import find_packages
 import pytopol
 
 try:
@@ -46,9 +47,7 @@ setup(
     author='Reza Salari',
     author_email='rezasalari@rutgers.edu',
     url='https://github.com/resal81/pytopol',
-    packages=[
-        'pytopol',
-    ],
+    packages=find_packages(),
     package_dir={'pytopol': 'pytopol'},
     include_package_data=True,
     install_requires=[
