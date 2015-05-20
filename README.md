@@ -19,7 +19,7 @@ reverse conversion of GROMACS topologies to NAMD is planned an will be implement
 
 ### Current stage
 
-Current version is 0.1.6.
+Current version is 0.1.7.
 
 All 0.1.x versions will be considered **alpha**. See the results for the current tests below.
 
